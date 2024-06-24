@@ -9,6 +9,10 @@ TSharedRef<SWidget> UMaterialSelectionScrollBoxWidget::RebuildWidget()
 	
 	MaterialSelectionScrollBox->OnRoadMaterialThubnailSelected.BindUObject(this, &UMaterialSelectionScrollBoxWidget::HandleRoadMaterialAssetThubnailSelected);
 	MaterialSelectionScrollBox->OnDoorMeshThubnailSelected.BindUObject(this, &UMaterialSelectionScrollBoxWidget::HandleDoorMeshAssetThubnailSelected);
+	MaterialSelectionScrollBox->OnInteriorWallMeshThubnailSelected.BindUObject(this, &UMaterialSelectionScrollBoxWidget::HandleInteriorWallMeshAssetThubnailSelected);
+	MaterialSelectionScrollBox->OnInteriorRoofMeshThubnailSelected.BindUObject(this, &UMaterialSelectionScrollBoxWidget::HandleInteriorRoofMeshAssetThubnailSelected);
+	MaterialSelectionScrollBox->OnInteriorFloorMeshThubnailSelected.BindUObject(this, &UMaterialSelectionScrollBoxWidget::HandleInteriorFloorMeshAssetThubnailSelected);
+	MaterialSelectionScrollBox->OnBuildingMaterialThubnailSelected.BindUObject(this, &UMaterialSelectionScrollBoxWidget::HandleBuildingMaterialAssetThubnailSelected);
 
 	return MaterialSelectionScrollBox.ToSharedRef();
 }
@@ -22,6 +26,23 @@ void UMaterialSelectionScrollBoxWidget::HandleRoadMaterialAssetThubnailSelected(
 
 void  UMaterialSelectionScrollBoxWidget::HandleDoorMeshAssetThubnailSelected(const FDoorMeshData& DoorMeshData) {
 	DoorMeshController.ExecuteIfBound(DoorMeshData);
+}
+
+void  UMaterialSelectionScrollBoxWidget::HandleInteriorWallMeshAssetThubnailSelected(const FInteriorWallMeshData& InteriorWallMeshData) {
+	InteriorWallMeshController.ExecuteIfBound(InteriorWallMeshData);
+}
+
+void  UMaterialSelectionScrollBoxWidget::HandleInteriorRoofMeshAssetThubnailSelected(const FInteriorRoofMeshData& InteriorWallMeshData) {
+	InteriorRoofMeshController.ExecuteIfBound(InteriorWallMeshData);
+}
+
+void  UMaterialSelectionScrollBoxWidget::HandleInteriorFloorMeshAssetThubnailSelected(const FInteriorFloorMeshData& InteriorWallMeshData) {
+	InteriorFloorMeshController.ExecuteIfBound(InteriorWallMeshData);
+}
+
+void UMaterialSelectionScrollBoxWidget::HandleBuildingMaterialAssetThubnailSelected(const FBuildingMaterialData& MeshData)
+{
+	BuildingMaterialController.ExecuteIfBound(MeshData);
 }
 
 

@@ -8,8 +8,8 @@ AFloorActor::AFloorActor()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	ProceduralMeshRoot = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProceduralMesh"));
-	RootComponent = ProceduralMeshRoot;
+	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
+	RootComponent = Scene;
 
 
 }
@@ -20,9 +20,14 @@ void AFloorActor::OnConstruction(const FTransform& Transform)
 
 }
 
-void AFloorActor::GenerateFloor(FVector Dimensions)
+void AFloorActor::GenerateFloor(FVector Dimensions,FName Name)
 {
     // Array to hold the vertices of the mesh
+    //ProceduralMeshRoot->ClearAllMeshSections();
+    ProceduralMeshRoot = NewObject<UProceduralMeshComponent>(this, Name);
+    ProceduralMeshRoot->AttachToComponent(Scene,FAttachmentTransformRules::KeepRelativeTransform);
+    ProceduralMeshRoot->RegisterComponentWithWorld(GetWorld());
+
     TArray<FVector> Vertices;
 
     float L = Dimensions.X / 2.0f;

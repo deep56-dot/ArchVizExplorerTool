@@ -9,6 +9,11 @@
 
 DECLARE_DELEGATE_OneParam(FRoadMaterialController, const FRoadMaterialData& MaterialData);
 DECLARE_DELEGATE_OneParam(FDoorMeshController, const FDoorMeshData& DoorMeshData);
+DECLARE_DELEGATE_OneParam(FInteriorWallMeshController, const FInteriorWallMeshData& DoorMeshData);
+DECLARE_DELEGATE_OneParam(FInteriorFloorMeshController, const FInteriorFloorMeshData& DoorMeshData);
+DECLARE_DELEGATE_OneParam(FInteriorRoofMeshController, const FInteriorRoofMeshData& DoorMeshData);
+DECLARE_DELEGATE_OneParam(FBuildingMaterialController, const FBuildingMaterialData& MaterialData);
+
 
 UCLASS()
 class ARCHVIZEXPLORER_API UMaterialSelectionScrollBoxWidget : public UWidget
@@ -25,12 +30,36 @@ public:
 	FRoadMaterialController RoadMaterialController;
 
 	FDoorMeshController DoorMeshController;
+
+	FInteriorWallMeshController InteriorWallMeshController;
+
+	FInteriorFloorMeshController InteriorFloorMeshController;
+
+	FInteriorRoofMeshController InteriorRoofMeshController;
+
+	FBuildingMaterialController BuildingMaterialController;
+
+
+
+
 	
 	UFUNCTION()
 	void HandleRoadMaterialAssetThubnailSelected(const FRoadMaterialData& MaterialData);
 	
 	UFUNCTION()
 	void HandleDoorMeshAssetThubnailSelected(const FDoorMeshData& DoorMeshData);
+	
+	UFUNCTION()
+	void HandleInteriorWallMeshAssetThubnailSelected(const FInteriorWallMeshData& InteriorWallMeshData);
+
+    UFUNCTION()
+	void HandleInteriorFloorMeshAssetThubnailSelected(const FInteriorFloorMeshData& InteriorFloorMeshData);
+
+    UFUNCTION()
+	void HandleInteriorRoofMeshAssetThubnailSelected(const FInteriorRoofMeshData& InteriorRoofMeshData);
+
+	UFUNCTION()
+	void HandleBuildingMaterialAssetThubnailSelected(const FBuildingMaterialData& MaterialData);
 
 
 	const FText GetPaletteCategory();

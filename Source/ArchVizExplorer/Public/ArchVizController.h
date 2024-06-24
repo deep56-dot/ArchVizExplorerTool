@@ -16,6 +16,9 @@
 #include <WallActor.h>
 #include <BuildingWidget.h>
 #include <FloorActor.h>
+#include <MaterialWidget.h>
+#include <InteriorActor.h>
+#include <InteriorWidget.h>
 #include "ArchVizController.generated.h"
 
 
@@ -24,6 +27,15 @@ enum class EBuildingComponentType {
 	None,
 	Wall,
 	Door,
+	Floor,
+	Roof
+
+};
+
+UENUM(BlueprintType) 
+enum class EInteriorComponentType {
+
+	Wall,
 	Floor,
 	Roof
 
@@ -87,6 +99,9 @@ public:
 
 	 UFUNCTION()
 	 void RoadMateialApply(const FRoadMaterialData& MaterialData);
+
+	 UFUNCTION()
+	 void BuildingMateialApply(const FBuildingMaterialData& MaterialData);
 	 
 	 UFUNCTION()
 	 void RoadRightClick();
@@ -135,6 +150,9 @@ public:
 	 TSubclassOf<AWallActor> WallActor;
 
 	 UPROPERTY()
+	 UMaterialInterface* CurrWallMaterial;
+
+	 UPROPERTY()
 	 bool bWallMove;
 
 	 UPROPERTY()
@@ -159,8 +177,8 @@ public:
 	 UPROPERTY()
 	 AActor* CurrOffsetActor;
 	 
-	 UPROPERTY()
-	 bool bMove_ModifyMode;
+	 /*UPROPERTY()
+	 bool bMove_ModifyMode;*/
 
 	 UFUNCTION()
 	 void XoffsetChanged(float off);
@@ -260,5 +278,56 @@ public:
 	 UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	 TSubclassOf<UArchVizWidget> ArchVizWidget;
 
+
+	 UPROPERTY()
+	 UInputMappingContext* InteriorMappingContext;
+
+	 UPROPERTY()
+	 UInputAction* InteriorLeftClickAction;
+
+	 UFUNCTION()
+	 void InteriorLeftClick();
+
+	 UFUNCTION()
+	 void InteriorFloorGenerator(const FInteriorFloorMeshData& InteriorFloorMeshData);
+
+	 UFUNCTION()
+	 void InteriorRoofGenerator(const FInteriorRoofMeshData& InteriorRoofMeshData);
+
+	 UFUNCTION()
+	 void InteriorWallGenerator(const FInteriorWallMeshData& InteriorWallMeshData);
+
+	 UPROPERTY()
+	 bool bInteriorMove; 
+	 
+
+	 UPROPERTY()
+	 UInteriorWidget* InteriorWidgetInstance;
+
+	 UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	 TSubclassOf<UInteriorWidget> InteriorWidget;
+
+
+	 UPROPERTY()
+	 AInteriorActor* CurrInteriorActor;
+
+	 UPROPERTY()
+	 EInteriorComponentType TypeOfInterior;
+
+
+	 UPROPERTY()
+	 UInputMappingContext* MaterialMappingContext;
+
+	 UPROPERTY()
+	 UInputAction* MaterialLeftClickAction;
+
+	 UFUNCTION()
+	 void MaterialLeftClick();
+
+	 UPROPERTY()
+	 UMaterialWidget* MaterialWidgetInstance;
+
+	 UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	 TSubclassOf<UMaterialWidget> MaterialWidget;
 
 };

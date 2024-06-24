@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include <Components/CanvasPanel.h>
-
 #include <Components/ComboBoxString.h>
 #include "ArchVizWidget.generated.h"
 

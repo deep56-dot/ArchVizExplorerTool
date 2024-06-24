@@ -11,6 +11,10 @@
 
 DECLARE_DELEGATE_OneParam(FOnRoadMaterialThubnailSelected, const FRoadMaterialData&);
 DECLARE_DELEGATE_OneParam(FOnDoorMeshThubnailSelected, const FDoorMeshData&);
+DECLARE_DELEGATE_OneParam(FOnInteriorWallMeshThubnailSelected, const FInteriorWallMeshData&);
+DECLARE_DELEGATE_OneParam(FOnInteriorFloorMeshThubnailSelected, const FInteriorFloorMeshData&);
+DECLARE_DELEGATE_OneParam(FOnInteriorRoofMeshThubnailSelected, const FInteriorRoofMeshData&);
+DECLARE_DELEGATE_OneParam(FOnBuildingMaterialThubnailSelected, const FBuildingMaterialData&);
 
 UENUM()
 enum class EAssetType {
@@ -38,11 +42,22 @@ public:
 
 	FOnRoadMaterialThubnailSelected OnRoadMaterialThubnailSelected;
 	FOnDoorMeshThubnailSelected OnDoorMeshThubnailSelected;
+	FOnInteriorWallMeshThubnailSelected OnInteriorWallMeshThubnailSelected;
+	FOnInteriorFloorMeshThubnailSelected OnInteriorFloorMeshThubnailSelected;
+	FOnInteriorRoofMeshThubnailSelected OnInteriorRoofMeshThubnailSelected;
+	FOnBuildingMaterialThubnailSelected OnBuildingMaterialThubnailSelected;
+
 
 private:
 	
 	void RefreshAssetRoadMaterialThubnail();
 	void RefreshAssetDoorMeshThubnail();
+
+	void RefreshAssetInteriorWallMeshThubnail();
+	void RefreshAssetInteriorFloorMeshThubnail();
+	void RefreshAssetInteriorRoofMeshThubnail();
+
+	void RefreshAssetBuildingMaterialThubnail();
 
 
 	TWeakObjectPtr <UMaterialDataAsset> MaterialAsset;
