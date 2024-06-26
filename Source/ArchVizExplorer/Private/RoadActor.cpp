@@ -23,6 +23,7 @@ void ARoadActor::OnConstruction(const FTransform& Transform)
 
 void ARoadActor::GenerateRoad(FVector Dimensions)
 {
+	RoadDimensions = Dimensions;
 	TArray<FVector> Vertices;
 
 	float L = Dimensions.X / 2.0f;

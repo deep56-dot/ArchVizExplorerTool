@@ -28,6 +28,8 @@ void AInteriorActor::Tick(float DeltaTime)
 
 void AInteriorActor::GenerateInterior(UStaticMesh* StaticMesh)
 {
+	//InteriorStaticMesh = StaticMesh;
+	InteriorStaticMesh = StaticMesh;
 	UStaticMeshComponent* StaticMeshComponnet = NewObject<UStaticMeshComponent>(this);
 	StaticMeshComponnet->SetStaticMesh(StaticMesh);
 	StaticMeshComponnet->RegisterComponentWithWorld(GetWorld());

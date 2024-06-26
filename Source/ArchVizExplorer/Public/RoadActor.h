@@ -46,6 +46,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProcMesh")
 	UMaterialInstance* Material; 
 
-
+	UPROPERTY()
+	FVector RoadDimensions;
 	
 };

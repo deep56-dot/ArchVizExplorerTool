@@ -10,7 +10,7 @@
 #include "InputAction.h"
 #include "InputMappingContext.h"
 #include "InputModifiers.h"
-
+#include "Kismet/GameplayStatics.h"
 #include <ArchVizWidget.h>
 #include <RoadWidget.h>
 #include <WallActor.h>
@@ -19,6 +19,7 @@
 #include <MaterialWidget.h>
 #include <InteriorActor.h>
 #include <InteriorWidget.h>
+#include "ArchVizSaveGame.h"
 #include "ArchVizController.generated.h"
 
 
@@ -32,14 +33,12 @@ enum class EBuildingComponentType {
 
 };
 
-UENUM(BlueprintType) 
-enum class EInteriorComponentType {
-
-	Wall,
-	Floor,
-	Roof
-
-};
+//UENUM(BlueprintType) 
+//enum class EInteriorComponentType {
+//	Wall,
+//	Floor,
+//	Roof
+//};
 UCLASS()
 class ARCHVIZEXPLORER_API AArchVizController : public APlayerController
 {
@@ -163,13 +162,17 @@ public:
 	 UInputAction* WallLeftClickAction;
 	 
 	 UPROPERTY()
-	 UInputAction* WallRClickAction;
+	 UInputAction* WallRClickAction;	 
+	 UPROPERTY()
+	 UInputAction* WallSClickAction;
 
 	 UFUNCTION()
 	 void WallLeftClick();
 	 
 	 UFUNCTION()
-	 void WallRClick();
+	 void WallRClick(); 
+	 
+
 
 	 UFUNCTION()
 	 void OnWallSegmentsChanged(float Segments);
@@ -229,10 +232,16 @@ public:
 	 void OnFloorRotationChanged();
 
 	 UPROPERTY()
-	 UStaticMeshComponent* ClickedComponent;
+	 UStaticMeshComponent* ClickedComponent;	
+	 
+	UPROPERTY()
+	bool bDoorOpen;
 
 	 UFUNCTION()
 	 void DoorLeftClick();
+
+	 UFUNCTION()
+	 void OpenDoorButtonClick();
 
 	 UFUNCTION()
 	 void DoorMeshGeneration(const FDoorMeshData& DoorMeshData);
@@ -285,8 +294,14 @@ public:
 	 UPROPERTY()
 	 UInputAction* InteriorLeftClickAction;
 
+	 UPROPERTY()
+	 UInputAction* InteriorRClickAction;
+
 	 UFUNCTION()
 	 void InteriorLeftClick();
+
+	 UFUNCTION()
+	 void InteriorRClick();
 
 	 UFUNCTION()
 	 void InteriorFloorGenerator(const FInteriorFloorMeshData& InteriorFloorMeshData);
@@ -311,8 +326,8 @@ public:
 	 UPROPERTY()
 	 AInteriorActor* CurrInteriorActor;
 
-	 UPROPERTY()
-	 EInteriorComponentType TypeOfInterior;
+	/* UPROPERTY()
+	 EInteriorComponentType InteriorType;*/
 
 
 	 UPROPERTY()
@@ -329,5 +344,12 @@ public:
 
 	 UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	 TSubclassOf<UMaterialWidget> MaterialWidget;
+
+		 UFUNCTION(BlueprintCallable)
+		 void SaveGame();
+
+		 UFUNCTION(BlueprintCallable)
+		 void LoadGame();
+
 
 };

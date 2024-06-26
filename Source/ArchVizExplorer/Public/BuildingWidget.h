@@ -11,6 +11,7 @@
 #include <MaterialSelectionScrollBoxWidget.h>
 
 #include <Components/VerticalBox.h>
+#include <Components/TextBlock.h>
 #include "BuildingWidget.generated.h"
 
 /**
@@ -113,6 +114,12 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* DestroyButton;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* OpenDoorButton;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* DoorToggle;
 
 	UFUNCTION()
 	void SetPlayerController(class AArchVizController* PlayerController);

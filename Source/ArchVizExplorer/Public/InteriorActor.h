@@ -26,6 +26,12 @@ public:
 	UPROPERTY()
 	USceneComponent* SceneComponent;
 
+	UPROPERTY()
+	UStaticMesh* InteriorStaticMesh;
+
+	UPROPERTY()
+	FString TypeOfInterior;
+
 	void GenerateInterior(UStaticMesh* StaticMesh);
 
 };

@@ -25,16 +25,29 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-	void GenerateFloor(FVector Dimensions,FName Name);
+	void GenerateFloor(FVector Dimensions);
+
+
+
+	UFUNCTION(BlueprintCallable)
+	void GenerateRoof(FVector Dimensions);
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProcMesh")
-	FVector Dimentions;
+	FVector FDimentions;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProcMesh")
+	FString TypeOfActor;
 
 	UPROPERTY()
 	USceneComponent* Scene;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProcMesh")
-	UProceduralMeshComponent* ProceduralMeshRoot;
+	UProceduralMeshComponent* ProceduralMeshFloor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProcMesh")
+	UProceduralMeshComponent* ProceduralMeshRoof;
+	
+
 
 };
