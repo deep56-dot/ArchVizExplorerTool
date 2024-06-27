@@ -69,6 +69,9 @@ struct FInteriorActorData {
 	UPROPERTY()
 	UStaticMesh* StaticMesh;
 
+	UPROPERTY()
+	FString InteriorType;
+
 
 };
 UCLASS()

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include <Components/CanvasPanel.h>
+#include <Components/Button.h>
 #include <Components/ComboBoxString.h>
 #include "ArchVizWidget.generated.h"
 
@@ -33,6 +34,14 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* ModeString;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* SaveButton;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* LoadButton;
+
+
 
 	UPROPERTY()
 	class AArchVizController* ArchVizController;

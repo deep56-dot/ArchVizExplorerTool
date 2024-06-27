@@ -159,12 +159,14 @@ public:
 
 	 /** Action to update location. */
 	 UPROPERTY()
-	 UInputAction* WallLeftClickAction;
+	 UInputAction* WallLeftClickAction; 
+
+	 UPROPERTY()
+	 UInputAction* DeleteClickAction;
 	 
 	 UPROPERTY()
 	 UInputAction* WallRClickAction;	 
-	 UPROPERTY()
-	 UInputAction* WallSClickAction;
+	
 
 	 UFUNCTION()
 	 void WallLeftClick();
@@ -180,9 +182,6 @@ public:
 	 UPROPERTY()
 	 AActor* CurrOffsetActor;
 	 
-	 /*UPROPERTY()
-	 bool bMove_ModifyMode;*/
-
 	 UFUNCTION()
 	 void XoffsetChanged(float off);
 
@@ -214,7 +213,10 @@ public:
 
 	 /** Action to update location. */
 	 UPROPERTY()
-	 UInputAction* FloorLeftClickAction;
+	 UInputAction* FloorLeftClickAction;	
+	 
+	 UPROPERTY()
+	 UInputAction* FloorRClickAction;
 
 	 UPROPERTY()
 	 bool bFloorMove;
@@ -326,8 +328,8 @@ public:
 	 UPROPERTY()
 	 AInteriorActor* CurrInteriorActor;
 
-	/* UPROPERTY()
-	 EInteriorComponentType InteriorType;*/
+	 UPROPERTY()
+	 FString InteriorType;
 
 
 	 UPROPERTY()
