@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Misc/Paths.h"
+#include "HAL/PlatformFilemanager.h"
+#include "HAL/FileManager.h"
+#include "Misc/FileHelper.h"
 #include <RoadActor.h>
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -165,8 +169,7 @@ public:
 	 UInputAction* DeleteClickAction;
 	 
 	 UPROPERTY()
-	 UInputAction* WallRClickAction;	 
-	
+	 UInputAction* RClickAction;
 
 	 UFUNCTION()
 	 void WallLeftClick();
@@ -195,7 +198,7 @@ public:
 	 void OnMoveButtonClicked();
 
 	 UFUNCTION()
-	 void OnDestroyButtonClicked();
+	 void DeleteClicked();
 
 	 
 
@@ -215,8 +218,6 @@ public:
 	 UPROPERTY()
 	 UInputAction* FloorLeftClickAction;	
 	 
-	 UPROPERTY()
-	 UInputAction* FloorRClickAction;
 
 	 UPROPERTY()
 	 bool bFloorMove;
@@ -231,7 +232,7 @@ public:
 	 void OnFloorWidthChanged(float Width); 
 	 
 	 UFUNCTION()
-	 void OnFloorRotationChanged();
+	 void RClicked();
 
 	 UPROPERTY()
 	 UStaticMeshComponent* ClickedComponent;	
@@ -298,12 +299,18 @@ public:
 
 	 UPROPERTY()
 	 UInputAction* InteriorRClickAction;
+	 
+	 UPROPERTY()
+	 UInputAction* InteriorDeleteClickAction;
 
 	 UFUNCTION()
 	 void InteriorLeftClick();
 
 	 UFUNCTION()
 	 void InteriorRClick();
+
+	 UFUNCTION()
+	 void InteriorDeleteClick();
 
 	 UFUNCTION()
 	 void InteriorFloorGenerator(const FInteriorFloorMeshData& InteriorFloorMeshData);
@@ -341,17 +348,28 @@ public:
 	 UFUNCTION()
 	 void MaterialLeftClick();
 
+	 UFUNCTION()
+	 void SaveGame(FString Name);
+
+	 UFUNCTION()
+	 void LoadGame(FString Name);
+
 	 UPROPERTY()
 	 UMaterialWidget* MaterialWidgetInstance;
 
 	 UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	 TSubclassOf<UMaterialWidget> MaterialWidget;
 
-		 UFUNCTION(BlueprintCallable)
-		 void SaveGame();
 
+		 
+		 UFUNCTION()
+		 void OnInstructionButtonClicked();
+		 
 		 UFUNCTION(BlueprintCallable)
-		 void LoadGame();
+		 void HideInstructionVisibility();
+
+		 UFUNCTION()
+		 void RetrieveFilenamesFromDirectory(const FString& DirectoryPath, TArray<FString>& OutFilenames);
 
 
 };

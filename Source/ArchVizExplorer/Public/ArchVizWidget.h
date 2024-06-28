@@ -6,7 +6,10 @@
 #include "Blueprint/UserWidget.h"
 #include <Components/CanvasPanel.h>
 #include <Components/Button.h>
+#include <Components/Border.h>
+#include <Components/TextBlock.h>
 #include <Components/ComboBoxString.h>
+#include <Components/EditableText.h>
 #include "ArchVizWidget.generated.h"
 
 /**
@@ -24,10 +27,21 @@ protected:
 
 public:
 	UFUNCTION()
+	void SaveButtonClicked();
+	UFUNCTION()
+	void SaveButtonNameClicked();
+	UFUNCTION()
+	void LoadButtonClicked();
+	UFUNCTION()
 	void ModeChanged(FString MString, ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void LoadOptionChanged(FString MString, ESelectInfo::Type SelectionType);
 
 	UFUNCTION()
 	void SetPlayerController(class AArchVizController* PlayerController);
+
+	UFUNCTION()
+	void PopulateComboBox(TArray<FString>& InMapNames);
 
 	UPROPERTY(meta = (BindWidget))
 	UCanvasPanel* CanvasPanel;
@@ -39,9 +53,28 @@ public:
 	UButton* SaveButton;
 
 	UPROPERTY(meta = (BindWidget))
-	UButton* LoadButton;
+	UButton* LoadButton;	
+	
+	UPROPERTY(meta = (BindWidget))
+	UButton* InstructionButton;
 
+	UPROPERTY(meta = (BindWidget))
+	UBorder* InstructionBox;
 
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* LeftMouseText;
+
+	UPROPERTY(meta = (BindWidget))
+	UComboBoxString* LoadOptions;
+
+	UPROPERTY(meta = (BindWidget))
+	UBorder* SaveOption;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* SaveButtonName;
+	
+	UPROPERTY(meta = (BindWidget))
+	UEditableText* SaveName;
 
 	UPROPERTY()
 	class AArchVizController* ArchVizController;

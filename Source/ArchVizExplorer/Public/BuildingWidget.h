@@ -82,8 +82,6 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UButton* FloorButton;
 
-	UPROPERTY(meta = (BindWidget))
-	UButton* RotateFloorButton;
 
 	
 
@@ -112,8 +110,6 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UButton* MoveButton;
 
-	UPROPERTY(meta = (BindWidget))
-	UButton* DestroyButton;
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* OpenDoorButton;

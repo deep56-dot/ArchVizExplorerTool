@@ -3,6 +3,7 @@
 
 
 #include "ArchVizController.h"
+#include "TimerManager.h"
 #include <Kismet/KismetMathLibrary.h>
 
 AArchVizController::AArchVizController()
@@ -23,27 +24,24 @@ void AArchVizController::SetupInputComponent()
 	RoadRightClickAction->ValueType = EInputActionValueType::Boolean;
 	RoadMappingContext->MapKey(RoadRightClickAction, EKeys::RightMouseButton);
 
-
-
 	WallMappingContext = NewObject<UInputMappingContext>(this);
 
 	DeleteClickAction = NewObject<UInputAction>(this);
 	DeleteClickAction->ValueType = EInputActionValueType::Boolean;
+
+	RClickAction = NewObject<UInputAction>(this);
+	RClickAction->ValueType = EInputActionValueType::Boolean;
+
 	WallMappingContext->MapKey(DeleteClickAction, EKeys::Delete);
+	WallMappingContext->MapKey(RClickAction, EKeys::R);
 	
-	//DoorMappingContext->MapKey(DeleteClickAction, EKeys::Delete);
 
 	WallLeftClickAction = NewObject<UInputAction>(this);
 	WallLeftClickAction->ValueType = EInputActionValueType::Boolean;
 	WallMappingContext->MapKey(WallLeftClickAction, EKeys::LeftMouseButton);
 
-	WallRClickAction = NewObject<UInputAction>(this);
-	WallRClickAction->ValueType = EInputActionValueType::Boolean;
-	WallMappingContext->MapKey(WallRClickAction, EKeys::R);
-
-
-
 	DoorMappingContext = NewObject<UInputMappingContext>(this);
+	DoorMappingContext->MapKey(DeleteClickAction, EKeys::Delete);
 
 	DoorLeftClickAction = NewObject<UInputAction>(this);
 	DoorLeftClickAction->ValueType = EInputActionValueType::Boolean;
@@ -51,17 +49,15 @@ void AArchVizController::SetupInputComponent()
 
 	FloorMappingContext = NewObject<UInputMappingContext>(this);
 	FloorMappingContext->MapKey(DeleteClickAction, EKeys::Delete);
+	FloorMappingContext->MapKey(RClickAction, EKeys::R);
 
 	FloorLeftClickAction = NewObject<UInputAction>(this);
 	FloorLeftClickAction->ValueType = EInputActionValueType::Boolean;
 	FloorMappingContext->MapKey(FloorLeftClickAction, EKeys::LeftMouseButton);
 
-	FloorRClickAction = NewObject<UInputAction>(this);
-	FloorRClickAction->ValueType = EInputActionValueType::Boolean;
-	FloorMappingContext->MapKey(FloorRClickAction, EKeys::R);
-
 	ModifyComponentMappingContext = NewObject<UInputMappingContext>(this);
 	ModifyComponentMappingContext->MapKey(DeleteClickAction, EKeys::Delete);
+	ModifyComponentMappingContext->MapKey(RClickAction, EKeys::R);
 
 	ModifyComponentLeftClickAction = NewObject<UInputAction>(this);
 	ModifyComponentLeftClickAction->ValueType = EInputActionValueType::Boolean;
@@ -83,32 +79,35 @@ void AArchVizController::SetupInputComponent()
 	InteriorRClickAction = NewObject<UInputAction>(this);
 	InteriorRClickAction->ValueType = EInputActionValueType::Boolean;
 	InteriorMappingContext->MapKey(InteriorRClickAction, EKeys::R);
+	
+	InteriorDeleteClickAction = NewObject<UInputAction>(this);
+	InteriorDeleteClickAction->ValueType = EInputActionValueType::Boolean;
+	InteriorMappingContext->MapKey(InteriorDeleteClickAction, EKeys::Delete);
 
 
 
 	UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent);
 
 	if (EIC) {
-		EIC->BindAction(DeleteClickAction, ETriggerEvent::Completed, this, &AArchVizController::OnDestroyButtonClicked);
+		EIC->BindAction(DeleteClickAction, ETriggerEvent::Completed, this, &AArchVizController::DeleteClicked);	
+		EIC->BindAction(RClickAction, ETriggerEvent::Completed, this, &AArchVizController::RClicked);
 
 		EIC->BindAction(RoadLeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::RoadLeftClick);
 		EIC->BindAction(RoadRightClickAction, ETriggerEvent::Completed, this, &AArchVizController::RoadRightClick);
 
 		EIC->BindAction(WallLeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::WallLeftClick);
-		EIC->BindAction(WallRClickAction, ETriggerEvent::Completed, this, &AArchVizController::WallRClick);
-
-
+	
 		EIC->BindAction(DoorLeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::DoorLeftClick);
 
 		EIC->BindAction(FloorLeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::FloorLeftClick);
-		EIC->BindAction(FloorLeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::OnFloorRotationChanged);
-
+		
 		EIC->BindAction(ModifyComponentLeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::ModifyComponentLeftClick);
 
 		EIC->BindAction(MaterialLeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::MaterialLeftClick);
 
 		EIC->BindAction(InteriorLeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::InteriorLeftClick);
 		EIC->BindAction(InteriorRClickAction, ETriggerEvent::Completed, this, &AArchVizController::InteriorRClick);
+		EIC->BindAction(InteriorDeleteClickAction, ETriggerEvent::Completed, this, &AArchVizController::InteriorDeleteClick);
 
 	}
 
@@ -195,6 +194,19 @@ void AArchVizController::BeginPlay()
 	bInteriorMove = false;
 	bDoorOpen = false;
 
+	//For Template
+	TArray<FString> Filenames;
+	FString DirectoryPath = FPaths::ProjectSavedDir() / TEXT("SaveGames");
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Cyan, DirectoryPath);
+
+	RetrieveFilenamesFromDirectory(DirectoryPath, Filenames);
+
+	for (const FString& Filename : Filenames)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, Filename);
+	}
+	
+
 	RoadWidgetInstance = CreateWidget<URoadWidget>(this, RoadWidget);
 	RoadWidgetInstance->MaterialBox->RoadMaterialController.BindUObject(this, &AArchVizController::RoadMateialApply);
 
@@ -209,9 +221,14 @@ void AArchVizController::BeginPlay()
 
 	ArchVizWidgetInstance = CreateWidget<UArchVizWidget>(this, ArchVizWidget);
 	
-	ArchVizWidgetInstance->SaveButton->OnClicked.AddDynamic(this, &AArchVizController::SaveGame);
-	ArchVizWidgetInstance->LoadButton->OnClicked.AddDynamic(this, &AArchVizController::LoadGame);
-
+	//ArchVizWidgetInstance->SaveButton->OnClicked.AddDynamic(this, &AArchVizController::SaveGame);
+	ArchVizWidgetInstance->SaveOption->SetVisibility(ESlateVisibility::Collapsed);
+	ArchVizWidgetInstance->LoadOptions->SetVisibility(ESlateVisibility::Collapsed);
+	//ArchVizWidgetInstance->LoadButton->OnClicked.AddDynamic(this, &AArchVizController::LoadGame);
+	ArchVizWidgetInstance->InstructionButton->OnClicked.AddDynamic(this, &AArchVizController::OnInstructionButtonClicked);
+	if (ArchVizWidgetInstance) {
+		ArchVizWidgetInstance->PopulateComboBox(Filenames);
+	}
 
 	BuildingWidgetInstance = CreateWidget<UBuildingWidget>(this, BuildingWidget);
 	BuildingWidgetInstance->DoorMeshBox->DoorMeshController.BindUObject(this, &AArchVizController::DoorMeshGeneration);
@@ -229,9 +246,6 @@ void AArchVizController::BeginPlay()
 	}
 
 }
-
-
-
 
 void AArchVizController::RoadLeftClick()
 {
@@ -542,7 +556,6 @@ void AArchVizController::OnModeChanged(FString Mode)
 			BuildingWidgetInstance->Border_FloorW->SetVisibility(ESlateVisibility::Collapsed);
 			BuildingWidgetInstance->DoorMeshBox->SetVisibility(ESlateVisibility::Collapsed);
 			BuildingWidgetInstance->VerticalBox_Modify->SetVisibility(ESlateVisibility::Hidden);
-			BuildingWidgetInstance->RotateFloorButton->SetVisibility(ESlateVisibility::Collapsed);
 			BuildingWidgetInstance->OpenDoorButton->SetVisibility(ESlateVisibility::Collapsed);
 
 		}
@@ -704,8 +717,10 @@ void AArchVizController::OnMoveButtonClicked()
 
 }
 
-void AArchVizController::OnDestroyButtonClicked()
+void AArchVizController::DeleteClicked()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Inside Delete");
+
 	if (WallActorInstance && TypeOfComponent == EBuildingComponentType::Wall) {
 		WallActorInstance->Destroy();
 		WallActorInstance = nullptr;
@@ -721,6 +736,17 @@ void AArchVizController::OnDestroyButtonClicked()
 	else if (CurrOffsetActor && TypeOfComponent == EBuildingComponentType::None) {
 		CurrOffsetActor->Destroy();
 		CurrOffsetActor = nullptr;
+	}
+	else if (ClickedComponent && TypeOfComponent == EBuildingComponentType::Door) {
+		if(ClickedComponent->GetMaterials().Num()>1){
+			UStaticMesh* WallMesh = LoadObject<UStaticMesh>(this, TEXT("/Script/Engine.StaticMesh'/Game/_GENERATED/ZTI/WallSegment.WallSegment'"));
+			UMaterialInterface* WallMaterial = ClickedComponent->GetMaterial(3);
+			BuildingWidgetInstance->DoorToggle->SetText(FText::FromString("Open Door"));
+
+			ClickedComponent->SetStaticMesh(WallMesh);
+			ClickedComponent->SetMaterial(0, WallMaterial);
+		}
+		
 	}
 }
 
@@ -756,13 +782,33 @@ void AArchVizController::OnFloorWidthChanged(float Width)
 	}
 }
 
-void AArchVizController::OnFloorRotationChanged()
+void AArchVizController::RClicked()
 {
-	if (IsValid(CurrFloorActor))
-	{
+	//if (IsValid(CurrFloorActor))
+	//{
+	//	FRotator Rotation_ = CurrFloorActor->GetActorRotation();
+	//	Rotation_.Yaw += 90;
+	//	CurrFloorActor->SetActorRotation(Rotation_);
+	//}
+	if (WallActorInstance && TypeOfComponent == EBuildingComponentType::Wall) {
+		FRotator Rotation_ = WallActorInstance->GetActorRotation();
+		Rotation_.Yaw += 90;
+		WallActorInstance->SetActorRotation(Rotation_);
+	}
+	else if (CurrFloorActor && (TypeOfComponent == EBuildingComponentType::Floor || TypeOfComponent == EBuildingComponentType::Roof)) {
 		FRotator Rotation_ = CurrFloorActor->GetActorRotation();
 		Rotation_.Yaw += 90;
 		CurrFloorActor->SetActorRotation(Rotation_);
+	}
+	else if (WallActorInstance && TypeOfComponent == EBuildingComponentType::Wall) {
+		FRotator Rotation_ = WallActorInstance->GetActorRotation();
+		Rotation_.Yaw += 90;
+		WallActorInstance->SetActorRotation(Rotation_);
+	}
+	else if (CurrOffsetActor && TypeOfComponent == EBuildingComponentType::None) {
+		FRotator Rotation_ = CurrOffsetActor->GetActorRotation();
+		Rotation_.Yaw += 90;
+		CurrOffsetActor->SetActorRotation(Rotation_);
 	}
 }
 
@@ -840,6 +886,7 @@ void AArchVizController::DoorMeshGeneration(const FDoorMeshData& DoorMeshData)
 
 		if (DoorMesh)
 		{
+			BuildingWidgetInstance->DoorToggle->SetText(FText::FromString("Open Door"));
 			UMaterialInterface* CurrFrameMaterial = DoorMesh->GetStaticMaterials()[0].MaterialInterface;
 			UMaterialInterface* CurrDoorMaterial = DoorMesh->GetStaticMaterials()[1].MaterialInterface;
 			ClickedComponent->SetStaticMesh(DoorMesh);
@@ -896,7 +943,7 @@ void AArchVizController::OnFloorButtonClicked()
 		BuildingWidgetInstance->Border_FloorW->SetVisibility(ESlateVisibility::Visible);
 		BuildingWidgetInstance->DoorMeshBox->SetVisibility(ESlateVisibility::Collapsed);
 		BuildingWidgetInstance->VerticalBox_Modify->SetVisibility(ESlateVisibility::Hidden);
-		BuildingWidgetInstance->RotateFloorButton->SetVisibility(ESlateVisibility::Visible);
+	
 
 
 	}
@@ -975,7 +1022,7 @@ void AArchVizController::OnWallButtonClicked()
 		BuildingWidgetInstance->Border_FloorL->SetVisibility(ESlateVisibility::Collapsed);
 		BuildingWidgetInstance->Border_FloorW->SetVisibility(ESlateVisibility::Collapsed);
 		BuildingWidgetInstance->DoorMeshBox->SetVisibility(ESlateVisibility::Collapsed);
-		BuildingWidgetInstance->RotateFloorButton->SetVisibility(ESlateVisibility::Collapsed);
+	
 		BuildingWidgetInstance->VerticalBox_Modify->SetVisibility(ESlateVisibility::Hidden);
 	}
 
@@ -1033,7 +1080,7 @@ void AArchVizController::OnRoofButtonClicked()
 
 		BuildingWidgetInstance->DoorMeshBox->SetVisibility(ESlateVisibility::Collapsed);
 		BuildingWidgetInstance->VerticalBox_Modify->SetVisibility(ESlateVisibility::Hidden);
-		BuildingWidgetInstance->RotateFloorButton->SetVisibility(ESlateVisibility::Visible);
+		
 
 	}
 
@@ -1076,7 +1123,7 @@ void AArchVizController::OnDoorButtonClicked()
 		BuildingWidgetInstance->Border_FloorW->SetVisibility(ESlateVisibility::Collapsed);
 		BuildingWidgetInstance->DoorMeshBox->SetVisibility(ESlateVisibility::Collapsed);
 		BuildingWidgetInstance->VerticalBox_Modify->SetVisibility(ESlateVisibility::Hidden);
-		BuildingWidgetInstance->RotateFloorButton->SetVisibility(ESlateVisibility::Collapsed);
+	
 
 
 	}
@@ -1166,7 +1213,7 @@ void AArchVizController::ModifyComponentLeftClick()
 			BuildingWidgetInstance->VerticalBox_Modify->SetVisibility(ESlateVisibility::Visible);
 			BuildingWidgetInstance->Border_FloorL->SetVisibility(ESlateVisibility::Collapsed);
 			BuildingWidgetInstance->Border_FloorW->SetVisibility(ESlateVisibility::Collapsed);
-			BuildingWidgetInstance->RotateFloorButton->SetVisibility(ESlateVisibility::Collapsed);
+		
 
 		}
 	}
@@ -1198,7 +1245,7 @@ void AArchVizController::ModifyComponentLeftClick()
 			BuildingWidgetInstance->VerticalBox_Modify->SetVisibility(ESlateVisibility::Visible);
 			BuildingWidgetInstance->Border_FloorL->SetVisibility(ESlateVisibility::Visible);
 			BuildingWidgetInstance->Border_FloorW->SetVisibility(ESlateVisibility::Visible);
-			BuildingWidgetInstance->RotateFloorButton->SetVisibility(ESlateVisibility::Visible);
+			
 			BuildingWidgetInstance->FLength->SetValue(CurrFloorActor->GetActorRelativeScale3D().X * 100);
 			BuildingWidgetInstance->FWidth->SetValue(CurrFloorActor->GetActorRelativeScale3D().Y * 100);
 
@@ -1232,7 +1279,7 @@ void AArchVizController::OnModifyComponentButtonClicked()
 		BuildingWidgetInstance->Border_FloorL->SetVisibility(ESlateVisibility::Collapsed);
 		BuildingWidgetInstance->Border_FloorW->SetVisibility(ESlateVisibility::Collapsed);
 		BuildingWidgetInstance->DoorMeshBox->SetVisibility(ESlateVisibility::Collapsed);
-		BuildingWidgetInstance->RotateFloorButton->SetVisibility(ESlateVisibility::Collapsed);
+	
 		BuildingWidgetInstance->Border_Seg->SetVisibility(ESlateVisibility::Hidden);
 
 
@@ -1299,6 +1346,14 @@ void AArchVizController::InteriorRClick()
 		FRotator Rotation = CurrInteriorActor->GetActorRotation();
 		Rotation.Yaw += 90;
 		CurrInteriorActor->SetActorRotation(Rotation);
+	}
+}
+
+void AArchVizController::InteriorDeleteClick()
+{
+	if (CurrInteriorActor) {
+		CurrInteriorActor->Destroy();
+		CurrInteriorActor = nullptr;
 	}
 }
 
@@ -1443,7 +1498,7 @@ void AArchVizController::MaterialLeftClick()
 }
 
 
-void AArchVizController::SaveGame()
+void AArchVizController::SaveGame(FString Name)
 {
 	UArchVizSaveGame* SaveGameInstance = Cast<UArchVizSaveGame>(UGameplayStatics::CreateSaveGameObject(UArchVizSaveGame::StaticClass()));
 
@@ -1531,14 +1586,14 @@ void AArchVizController::SaveGame()
 
 
 
-		UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("PlayerSaveSlot"), 0);
+		UGameplayStatics::SaveGameToSlot(SaveGameInstance, Name, 0);
 		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Blue, "Game Saved Successfully");
 	}
 }
 
-void AArchVizController::LoadGame()
+void AArchVizController::LoadGame(FString Name)
 {
-	UArchVizSaveGame* LoadGameInstance = Cast<UArchVizSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("PlayerSaveSlot"), 0));
+	UArchVizSaveGame* LoadGameInstance = Cast<UArchVizSaveGame>(UGameplayStatics::LoadGameFromSlot(Name, 0));
 
 	if (LoadGameInstance)
 	{
@@ -1672,5 +1727,44 @@ void AArchVizController::LoadGame()
 	}
 }
 
+void AArchVizController::OnInstructionButtonClicked()
+{
+	FTimerHandle TimeHandle;
+	ArchVizWidgetInstance->InstructionBox->SetVisibility(ESlateVisibility::Visible);
+	GetWorld()->GetTimerManager().SetTimer(TimeHandle, this, &AArchVizController::HideInstructionVisibility, 5, false);
+}
 
+void AArchVizController::HideInstructionVisibility()
+{
+	ArchVizWidgetInstance->InstructionBox->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void AArchVizController::RetrieveFilenamesFromDirectory(const FString& DirectoryPath, TArray<FString>& OutFilenames)
+{
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+
+	// Check if the directory exists
+	if (PlatformFile.DirectoryExists(*DirectoryPath))
+	{
+		// Create a file visitor
+		struct FFileVisitor : public IPlatformFile::FDirectoryVisitor
+		{
+			TArray<FString>& FileNames;
+			FFileVisitor(TArray<FString>& InFileNames) : FileNames(InFileNames) {}
+
+			virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory) override
+			{
+				if (!bIsDirectory) // We only care about files, not directories
+				{
+					FileNames.Add(FPaths::GetBaseFilename(FilenameOrDirectory));
+				}
+				return true; // Continue searching
+			}
+		};
+
+		// Create an instance of the visitor and use it to iterate through the directory
+		FFileVisitor Visitor(OutFilenames);
+		PlatformFile.IterateDirectory(*DirectoryPath, Visitor);
+	}
+}
 
