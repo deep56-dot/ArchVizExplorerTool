@@ -23,6 +23,8 @@ void UArchVizWidget::SaveButtonNameClicked() {
 	FString Name = SaveName->GetText().ToString();
 	ArchVizController->SaveGame(Name);
 	SaveOption->SetVisibility(ESlateVisibility::Collapsed);
+	SaveButton->SetVisibility(ESlateVisibility::Visible);
+
 }
 
 void UArchVizWidget::LoadButtonClicked() {
@@ -37,6 +39,7 @@ void UArchVizWidget::ModeChanged(FString MString,ESelectInfo::Type SelectionType
 void UArchVizWidget::LoadOptionChanged(FString MString, ESelectInfo::Type SelectionType) {
 	ArchVizController->LoadGame(MString);
 	LoadOptions->SetVisibility(ESlateVisibility::Collapsed);
+	LoadButton->SetVisibility(ESlateVisibility::Visible);
 
 }
 

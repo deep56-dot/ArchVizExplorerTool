@@ -130,7 +130,7 @@ void AFloorActor::GenerateRoof(FVector Dimensions)
     float H = Dimensions.Z;
 
     // Offset all vertices by the amount to shift the origin to the bottom-front-left corner
-    FVector Offset = FVector(L, W, H + 300.0f);
+    FVector Offset = FVector(L, W, H );
    
 
     // Front Face

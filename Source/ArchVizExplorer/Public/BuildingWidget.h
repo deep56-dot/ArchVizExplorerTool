@@ -116,6 +116,15 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* DoorToggle;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* CurrFloorValue;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* IncFloorButton;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* DecFloorButton;
 
 	UFUNCTION()
 	void SetPlayerController(class AArchVizController* PlayerController);

@@ -60,9 +60,15 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UBorder* InstructionBox;
+	
+	UPROPERTY(meta = (BindWidget))
+	UBorder* CustomTextBorder;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* LeftMouseText;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* CustomText;
 
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* LoadOptions;

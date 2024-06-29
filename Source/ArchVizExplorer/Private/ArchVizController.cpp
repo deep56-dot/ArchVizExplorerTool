@@ -122,6 +122,13 @@ void AArchVizController::SetupInputComponent()
 void AArchVizController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (CurrFloorNo == 0) {
+		BuildingWidgetInstance->FloorButton->SetVisibility(ESlateVisibility::Visible);
+	}
+	else {
+		BuildingWidgetInstance->FloorButton->SetVisibility(ESlateVisibility::Hidden);
+
+	}
 	if (bWallMove) {
 		FCollisionQueryParams TraceParams(FName(TEXT("LineTrace")), true, WallActorInstance);
 		FHitResult HitResult;
@@ -131,7 +138,7 @@ void AArchVizController::Tick(float DeltaTime)
 
 		if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams)) {
 			FVector Location = HitResult.Location;
-			//Location.Z = 0;
+			Location.Z = (CurrFloorNo *320);
 			if (IsValid(WallActorInstance)) {
 				WallActorInstance->SetActorLocation(Location);
 				SnapActor(20, WallActorInstance);
@@ -152,13 +159,16 @@ void AArchVizController::Tick(float DeltaTime)
 
 		if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams)) {
 			FVector Location = HitResult.Location;
-			//Location.Z = 0;
+			if (CurrFloorActor->TypeOfActor == "Floor")
+				Location.Z = 0;
+			if (CurrFloorActor->TypeOfActor == "Roof")
+				Location.Z = ((CurrFloorNo + 1)*300)+(CurrFloorNo*20);
+
 			CurrFloorActor->SetActorLocation(Location);
 
 			SnapActor(20, CurrFloorActor);
 		}
 	}
-	//bool bMove = 
 	if (bInteriorMove && CurrInteriorActor) {
 
 		FCollisionQueryParams TraceParams;
@@ -173,13 +183,30 @@ void AArchVizController::Tick(float DeltaTime)
 
 		if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams)) {
 			FVector Location = HitResult.Location;
-			//Location.Z = 0;
 			CurrInteriorActor->SetActorLocation(Location);
 
-			//SnapActor(20, CurrFloorActor);
 		}
 	}
 
+}
+void AArchVizController::IncFloorButtonClicked()
+{
+	if (BuildingWidgetInstance) {
+		CurrFloorNo++;
+		SetCustomText(FText::FromString("You Are Creating Floor" + FString::FromInt(CurrFloorNo)));
+
+		BuildingWidgetInstance->CurrFloorValue->SetText(FText::AsNumber(CurrFloorNo));
+	}
+}
+void AArchVizController::DecFloorButtonClicked()
+{
+	if (BuildingWidgetInstance) {
+		if(CurrFloorNo >0){
+			CurrFloorNo--;
+			SetCustomText(FText::FromString("You Are Creating Floor" + FString::FromInt(CurrFloorNo)));
+			BuildingWidgetInstance->CurrFloorValue->SetText(FText::AsNumber(CurrFloorNo));
+		}
+	}
 }
 void AArchVizController::BeginPlay()
 {
@@ -193,19 +220,14 @@ void AArchVizController::BeginPlay()
 	bFloorMove = false;
 	bInteriorMove = false;
 	bDoorOpen = false;
+	CurrFloorNo = 0;
 
 	//For Template
 	TArray<FString> Filenames;
 	FString DirectoryPath = FPaths::ProjectSavedDir() / TEXT("SaveGames");
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Cyan, DirectoryPath);
+	
 
 	RetrieveFilenamesFromDirectory(DirectoryPath, Filenames);
-
-	for (const FString& Filename : Filenames)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, Filename);
-	}
-	
 
 	RoadWidgetInstance = CreateWidget<URoadWidget>(this, RoadWidget);
 	RoadWidgetInstance->MaterialBox->RoadMaterialController.BindUObject(this, &AArchVizController::RoadMateialApply);
@@ -221,10 +243,9 @@ void AArchVizController::BeginPlay()
 
 	ArchVizWidgetInstance = CreateWidget<UArchVizWidget>(this, ArchVizWidget);
 	
-	//ArchVizWidgetInstance->SaveButton->OnClicked.AddDynamic(this, &AArchVizController::SaveGame);
 	ArchVizWidgetInstance->SaveOption->SetVisibility(ESlateVisibility::Collapsed);
 	ArchVizWidgetInstance->LoadOptions->SetVisibility(ESlateVisibility::Collapsed);
-	//ArchVizWidgetInstance->LoadButton->OnClicked.AddDynamic(this, &AArchVizController::LoadGame);
+	ArchVizWidgetInstance->CustomTextBorder->SetVisibility(ESlateVisibility::Hidden);
 	ArchVizWidgetInstance->InstructionButton->OnClicked.AddDynamic(this, &AArchVizController::OnInstructionButtonClicked);
 	if (ArchVizWidgetInstance) {
 		ArchVizWidgetInstance->PopulateComboBox(Filenames);
@@ -236,7 +257,9 @@ void AArchVizController::BeginPlay()
 	BuildingWidgetInstance->XOffset->OnValueChanged.AddDynamic(this, &AArchVizController::XoffsetChanged);
 	BuildingWidgetInstance->YOffset->OnValueChanged.AddDynamic(this, &AArchVizController::YoffsetChanged);
 	BuildingWidgetInstance->ZOffset->OnValueChanged.AddDynamic(this, &AArchVizController::ZoffsetChanged);
-	BuildingWidgetInstance->MoveButton->OnClicked.AddDynamic(this, &AArchVizController::OnMoveButtonClicked);
+	BuildingWidgetInstance->MoveButton->OnClicked.AddDynamic(this, &AArchVizController::OnMoveButtonClicked);	
+	BuildingWidgetInstance->IncFloorButton->OnClicked.AddDynamic(this, &AArchVizController::IncFloorButtonClicked);	
+	BuildingWidgetInstance->DecFloorButton->OnClicked.AddDynamic(this, &AArchVizController::DecFloorButtonClicked);
 	
 	
 	BuildingWidgetInstance->OpenDoorButton->OnClicked.AddDynamic(this, &AArchVizController::OpenDoorButtonClick);
@@ -292,7 +315,8 @@ void AArchVizController::RoadLeftClick()
 					if (HitResult.bBlockingHit)
 					{
 						SecondClickLocation = HitResult.Location;
-
+						
+					
 						FVector Dimension;
 						Dimension.X = FVector::Dist(FirstClickLocation, SecondClickLocation);
 
@@ -369,18 +393,20 @@ void AArchVizController::RoadLeftClick()
 
 void AArchVizController::RoadMateialApply(const FRoadMaterialData& MaterialData)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Materila applied");
 	if (IsValid(CurrRoadActor)) {
 		CurrRoadActor->ProceduralMeshRoot->SetMaterial(0, MaterialData.RoadMaterial);
 	}
 	if (MaterialWidgetInstance) {
 		MaterialWidgetInstance->MaterialBox->SetVisibility(ESlateVisibility::Collapsed);
 	}
+	SetCustomText(FText::FromString("Material Applied Sucessfully"));
 }
 
 void AArchVizController::BuildingMateialApply(const FBuildingMaterialData& MaterialData)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Materila applied");
+	
+	SetCustomText(FText::FromString("Material Applied Sucessfully"));
+
 	if (IsValid(WallActorInstance)) {
 		for (auto MeshComponent : WallActorInstance->StaticMeshComponentArr) {
 			if (MeshComponent->GetStaticMesh()->GetStaticMaterials().Num() == 4) {
@@ -438,7 +464,7 @@ void AArchVizController::OnRoadLocYChanged(float LocationY)
 }
 
 void AArchVizController::EditorMode() {
-	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Button");
+	
 	if (!bEditorMode) {
 		bEditorMode = true;
 		RoadWidgetInstance->WidthBox->SetVisibility(ESlateVisibility::Visible);
@@ -719,7 +745,6 @@ void AArchVizController::OnMoveButtonClicked()
 
 void AArchVizController::DeleteClicked()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Inside Delete");
 
 	if (WallActorInstance && TypeOfComponent == EBuildingComponentType::Wall) {
 		WallActorInstance->Destroy();
@@ -748,19 +773,22 @@ void AArchVizController::DeleteClicked()
 		}
 		
 	}
+	SetCustomText(FText::FromString("Deleted Sucessfully"));
 }
 
 void AArchVizController::FloorLeftClick()
 {
 	bFloorMove = false;
-
+	if (CurrFloorActor->TypeOfActor == "Floor") {
+		FVector Location_=CurrFloorActor->GetActorLocation();
+		Location_.Z = 0;
+		CurrFloorActor->SetActorLocation(Location_);
+	}
 
 }
 
 void AArchVizController::OnFloorLengthChanged(float Length)
 {
-
-	/*if (CurrFloorActor && (TypeOfComponent == EBuildingComponentType::Floor || TypeOfComponent == EBuildingComponentType::Roof))*/
 	if (IsValid(CurrFloorActor))
 	{
 		FVector Scale = CurrFloorActor->GetActorRelativeScale3D();
@@ -771,25 +799,16 @@ void AArchVizController::OnFloorLengthChanged(float Length)
 
 void AArchVizController::OnFloorWidthChanged(float Width)
 {
-	/*if (CurrFloorActor && (TypeOfComponent == EBuildingComponentType::Floor || TypeOfComponent == EBuildingComponentType::Roof))*/
 	if (IsValid(CurrFloorActor))
 	{
 		FVector Scale = CurrFloorActor->GetActorRelativeScale3D();
 		Scale.Y = Width / 100.0f;
 		CurrFloorActor->SetActorRelativeScale3D(Scale);
-
-
 	}
 }
 
 void AArchVizController::RClicked()
 {
-	//if (IsValid(CurrFloorActor))
-	//{
-	//	FRotator Rotation_ = CurrFloorActor->GetActorRotation();
-	//	Rotation_.Yaw += 90;
-	//	CurrFloorActor->SetActorRotation(Rotation_);
-	//}
 	if (WallActorInstance && TypeOfComponent == EBuildingComponentType::Wall) {
 		FRotator Rotation_ = WallActorInstance->GetActorRotation();
 		Rotation_.Yaw += 90;
@@ -1355,6 +1374,7 @@ void AArchVizController::InteriorDeleteClick()
 		CurrInteriorActor->Destroy();
 		CurrInteriorActor = nullptr;
 	}
+	SetCustomText(FText::FromString("Deleted Sucessfully" ));
 }
 
 void AArchVizController::InteriorFloorGenerator(const FInteriorFloorMeshData& InteriorFloorMeshData)
@@ -1737,6 +1757,15 @@ void AArchVizController::OnInstructionButtonClicked()
 void AArchVizController::HideInstructionVisibility()
 {
 	ArchVizWidgetInstance->InstructionBox->SetVisibility(ESlateVisibility::Hidden);
+	ArchVizWidgetInstance->CustomTextBorder->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void AArchVizController::SetCustomText(FText Custom)
+{
+	ArchVizWidgetInstance->CustomText->SetText(Custom);
+	ArchVizWidgetInstance->CustomTextBorder->SetVisibility(ESlateVisibility::Visible);
+	FTimerHandle TimeHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimeHandle, this, &AArchVizController::HideInstructionVisibility, 2, false);
 }
 
 void AArchVizController::RetrieveFilenamesFromDirectory(const FString& DirectoryPath, TArray<FString>& OutFilenames)

@@ -55,6 +55,15 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY()
+	int CurrFloorNo;
+
+	UFUNCTION()
+	void IncFloorButtonClicked();
+
+	UFUNCTION()
+	void DecFloorButtonClicked();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProcMesh")
     ARoadActor*  RoadActor;
 
@@ -367,6 +376,9 @@ public:
 		 
 		 UFUNCTION(BlueprintCallable)
 		 void HideInstructionVisibility();
+
+		 UFUNCTION()
+		 void SetCustomText(FText Custom);
 
 		 UFUNCTION()
 		 void RetrieveFilenamesFromDirectory(const FString& DirectoryPath, TArray<FString>& OutFilenames);
