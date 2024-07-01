@@ -227,7 +227,10 @@ void AArchVizController::BeginPlay()
 	FString DirectoryPath = FPaths::ProjectSavedDir() / TEXT("SaveGames");
 	
 
-	RetrieveFilenamesFromDirectory(DirectoryPath, Filenames);
+	Filenames = FindFiles(DirectoryPath, ".sav");
+	for (int i = 0; i < Filenames.Num(); i++) {
+		Filenames[i] = Filenames[i].LeftChop(4);
+	}
 
 	RoadWidgetInstance = CreateWidget<URoadWidget>(this, RoadWidget);
 	RoadWidgetInstance->MaterialBox->RoadMaterialController.BindUObject(this, &AArchVizController::RoadMateialApply);
@@ -265,6 +268,8 @@ void AArchVizController::BeginPlay()
 	BuildingWidgetInstance->OpenDoorButton->OnClicked.AddDynamic(this, &AArchVizController::OpenDoorButtonClick);
 	if (ArchVizWidgetInstance) {
 		ArchVizWidgetInstance->AddToViewport();
+		
+		ArchVizWidgetInstance->CanvasPanelStart->SetVisibility(ESlateVisibility::Visible);
 		ArchVizWidgetInstance->SetPlayerController(this);
 	}
 
@@ -298,7 +303,7 @@ void AArchVizController::RoadLeftClick()
 					if (HitResult.bBlockingHit)
 					{
 						FirstClickLocation = HitResult.Location;
-						GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, FirstClickLocation.ToString());
+						
 
 						FActorSpawnParameters SpawnParams;
 						SpawnParams.Owner = this;
@@ -324,7 +329,7 @@ void AArchVizController::RoadLeftClick()
 						Dimension.Z = 5;
 						FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(FirstClickLocation, SecondClickLocation);
 						if (RoadActor) {
-							GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, SecondClickLocation.ToString());
+							
 							RoadActor->SetActorLocation((SecondClickLocation + FirstClickLocation) / 2);
 							RoadActor->SetActorRotation(Rotation);
 							RoadActor->GenerateRoad(Dimension);
@@ -343,6 +348,7 @@ void AArchVizController::RoadLeftClick()
 				CurrRoadActor = RoadActor;
 				if (HitResult.bBlockingHit)
 				{
+
 					PrevClickLocation = FirstClickLocation;
 					FirstClickLocation = SecondClickLocation;
 					SecondClickLocation = HitResult.Location;
@@ -353,16 +359,32 @@ void AArchVizController::RoadLeftClick()
 					float Angle = GetAngle(Direction, SecondClickLocation - FirstClickLocation);
 
 					if (OnRightOrleft(FirstClickLocation, SecondClickLocation, PrevClickLocation)) {
-						if (Angle >= 0 && Angle <= 45)
+						if (Angle >= 0 && Angle <= 45) {
 							EndPointDirection = Direction;
-						else if (Angle > 45 && Angle < 180)
+							FirstClickLocation -= (Direction.GetSafeNormal() * (CurrRoadActor->GetActorScale3D().Y*100 / 4));
+
+						}
+						else if (Angle > 45 && Angle < 180) {
 							EndPointDirection = LeftDirection;
+							FirstClickLocation -= (LeftDirection.GetSafeNormal() * (CurrRoadActor->GetActorScale3D().Y*100 / 4));
+
+						}
 					}
 					else {
-						if (Angle >= 0 && Angle <= 45)
+						if (Angle >= 0 && Angle <= 45) {
 							EndPointDirection = Direction;
+							FirstClickLocation -= (Direction.GetSafeNormal() * (CurrRoadActor->GetActorScale3D().Y*100/ 4));
+
+						}
 						else if (Angle > 45 && Angle < 180)
+						{
 							EndPointDirection = RightDirection;
+							GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FString::SanitizeFloat(CurrRoadActor->GetActorScale3D().Y * 100));
+							FirstClickLocation -= (RightDirection.GetSafeNormal() * (CurrRoadActor->GetActorScale3D().Y*100 / 4));
+							GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FirstClickLocation.ToString());
+
+						}
+
 					}
 
 
@@ -374,7 +396,7 @@ void AArchVizController::RoadLeftClick()
 					SecondClickLocation = FirstClickLocation + (EndPointDirection.GetSafeNormal() * Dimension.X);
 					FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(FirstClickLocation, SecondClickLocation);
 					if (RoadActor) {
-						GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, SecondClickLocation.ToString());
+						
 						RoadActor->SetActorLocation((SecondClickLocation + FirstClickLocation) / 2);
 						RoadActor->SetActorRotation(Rotation);
 						RoadActor->GenerateRoad(Dimension);
@@ -791,9 +813,9 @@ void AArchVizController::OnFloorLengthChanged(float Length)
 {
 	if (IsValid(CurrFloorActor))
 	{
-		FVector Scale = CurrFloorActor->GetActorRelativeScale3D();
-		Scale.X = Length / 100.0f;
-		CurrFloorActor->SetActorRelativeScale3D(Scale);
+		FVector Dim = CurrFloorActor->FDimentions;
+		Dim.X = Length ;
+		CurrFloorActor->GenerateFloor(Dim);
 	}
 }
 
@@ -801,9 +823,9 @@ void AArchVizController::OnFloorWidthChanged(float Width)
 {
 	if (IsValid(CurrFloorActor))
 	{
-		FVector Scale = CurrFloorActor->GetActorRelativeScale3D();
-		Scale.Y = Width / 100.0f;
-		CurrFloorActor->SetActorRelativeScale3D(Scale);
+		FVector Dim = CurrFloorActor->FDimentions;
+		Dim.Y = Width;
+		CurrFloorActor->GenerateFloor(Dim);
 	}
 }
 
@@ -1215,7 +1237,7 @@ void AArchVizController::ModifyComponentLeftClick()
 	CurrFloorActor = Cast<AFloorActor>(HitResult.GetActor());
 	if (IsValid(WallActorInstance)) {
 
-
+	
 		CurrOffsetActor = WallActorInstance;
 		//TypeOfComponent = EBuildingComponentType::Wall;
 
@@ -1233,7 +1255,9 @@ void AArchVizController::ModifyComponentLeftClick()
 			BuildingWidgetInstance->Border_FloorL->SetVisibility(ESlateVisibility::Collapsed);
 			BuildingWidgetInstance->Border_FloorW->SetVisibility(ESlateVisibility::Collapsed);
 		
-
+			BuildingWidgetInstance->XOffset->SetValue(0);
+			BuildingWidgetInstance->YOffset->SetValue(0);
+			BuildingWidgetInstance->ZOffset->SetValue(0);
 		}
 	}
 	else if (IsValid(CurrFloorActor)) {
@@ -1264,7 +1288,9 @@ void AArchVizController::ModifyComponentLeftClick()
 			BuildingWidgetInstance->VerticalBox_Modify->SetVisibility(ESlateVisibility::Visible);
 			BuildingWidgetInstance->Border_FloorL->SetVisibility(ESlateVisibility::Visible);
 			BuildingWidgetInstance->Border_FloorW->SetVisibility(ESlateVisibility::Visible);
-			
+			BuildingWidgetInstance->XOffset->SetValue(0);
+			BuildingWidgetInstance->YOffset->SetValue(0);
+			BuildingWidgetInstance->ZOffset->SetValue(0);
 			BuildingWidgetInstance->FLength->SetValue(CurrFloorActor->GetActorRelativeScale3D().X * 100);
 			BuildingWidgetInstance->FWidth->SetValue(CurrFloorActor->GetActorRelativeScale3D().Y * 100);
 
@@ -1374,6 +1400,7 @@ void AArchVizController::InteriorDeleteClick()
 		CurrInteriorActor->Destroy();
 		CurrInteriorActor = nullptr;
 	}
+	bInteriorMove = false;
 	SetCustomText(FText::FromString("Deleted Sucessfully" ));
 }
 
@@ -1768,32 +1795,22 @@ void AArchVizController::SetCustomText(FText Custom)
 	GetWorld()->GetTimerManager().SetTimer(TimeHandle, this, &AArchVizController::HideInstructionVisibility, 2, false);
 }
 
-void AArchVizController::RetrieveFilenamesFromDirectory(const FString& DirectoryPath, TArray<FString>& OutFilenames)
+
+TArray<FString>  AArchVizController::FindFiles(FString Path, FString Extension)
 {
-	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+		TArray<FString> FileList;
+		IFileManager& FileManager = IFileManager::Get();
 
-	// Check if the directory exists
-	if (PlatformFile.DirectoryExists(*DirectoryPath))
-	{
-		// Create a file visitor
-		struct FFileVisitor : public IPlatformFile::FDirectoryVisitor
+		if (!Path.EndsWith("/"))
 		{
-			TArray<FString>& FileNames;
-			FFileVisitor(TArray<FString>& InFileNames) : FileNames(InFileNames) {}
+			Path += "/";
+		}
 
-			virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory) override
-			{
-				if (!bIsDirectory) // We only care about files, not directories
-				{
-					FileNames.Add(FPaths::GetBaseFilename(FilenameOrDirectory));
-				}
-				return true; // Continue searching
-			}
-		};
+		FString FullPath = Path + TEXT("*") + Extension;
 
-		// Create an instance of the visitor and use it to iterate through the directory
-		FFileVisitor Visitor(OutFilenames);
-		PlatformFile.IterateDirectory(*DirectoryPath, Visitor);
-	}
+		FileManager.FindFiles(FileList, *FullPath, true, false);
+
+		return FileList;
 }
+
 

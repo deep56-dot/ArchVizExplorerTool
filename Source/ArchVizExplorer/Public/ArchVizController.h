@@ -381,7 +381,9 @@ public:
 		 void SetCustomText(FText Custom);
 
 		 UFUNCTION()
-		 void RetrieveFilenamesFromDirectory(const FString& DirectoryPath, TArray<FString>& OutFilenames);
+		 TArray<FString> FindFiles(FString Path, FString Extension);
+
+		
 
 
 };

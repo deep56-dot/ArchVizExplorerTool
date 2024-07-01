@@ -29,6 +29,8 @@ public:
 	UFUNCTION()
 	void SaveButtonClicked();
 	UFUNCTION()
+	void NewHouseButtonClicked();
+	UFUNCTION()
 	void SaveButtonNameClicked();
 	UFUNCTION()
 	void LoadButtonClicked();
@@ -45,6 +47,12 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UCanvasPanel* CanvasPanel;
+
+	UPROPERTY(meta = (BindWidget))
+	UCanvasPanel* CanvasPanelStart;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* NewHouseButton;
 
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* ModeString;

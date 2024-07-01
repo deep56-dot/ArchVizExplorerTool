@@ -12,11 +12,18 @@ void UArchVizWidget::NativeConstruct()
 	SaveButton->OnClicked.AddDynamic(this, &UArchVizWidget::SaveButtonClicked);
 	LoadButton->OnClicked.AddDynamic(this, &UArchVizWidget::LoadButtonClicked);
 	SaveButtonName->OnClicked.AddDynamic(this, &UArchVizWidget::SaveButtonNameClicked);
+	NewHouseButton->OnClicked.AddDynamic(this, &UArchVizWidget::NewHouseButtonClicked);
 }
 
 void UArchVizWidget::SaveButtonClicked() {
 	SaveButton->SetVisibility(ESlateVisibility::Collapsed);
 	SaveOption->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UArchVizWidget::NewHouseButtonClicked() 
+{
+		CanvasPanel->SetVisibility(ESlateVisibility::Visible);
+		CanvasPanelStart->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UArchVizWidget::SaveButtonNameClicked() {
@@ -40,6 +47,9 @@ void UArchVizWidget::LoadOptionChanged(FString MString, ESelectInfo::Type Select
 	ArchVizController->LoadGame(MString);
 	LoadOptions->SetVisibility(ESlateVisibility::Collapsed);
 	LoadButton->SetVisibility(ESlateVisibility::Visible);
+	CanvasPanel->SetVisibility(ESlateVisibility::Visible);
+	CanvasPanelStart->SetVisibility(ESlateVisibility::Collapsed);
+
 
 }
 
@@ -54,7 +64,7 @@ void UArchVizWidget::PopulateComboBox(TArray<FString>& InMapNames)
 		for (const FString& MapName : InMapNames)
 		{
 			LoadOptions->AddOption(MapName);
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, MapName);
+			
 		}
 
 	}

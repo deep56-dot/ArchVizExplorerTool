@@ -64,19 +64,16 @@ Build/*/**
 *_BuiltData.uasset
 
 # Ignore everything in the save directory
-Save/Autosaves
-Save/Collections
-Save/Config
-Save/Logs
-Save/SourceControl
-Save/WorldPartition
-Save/webcache_4430
+Save/Autosaves/*
+Save/Collections/*
+Save/Config/*
+Save/Logs/*
+Save/SourceControl/*
+Save/WorldPartition/*
+Save/webcache_4430/*
 
 
 
-# But do not ignore the SavedGames folder and its contents
-!Save/SaveGames/
-!Save/SaveGames/**
 
 # Compiled source files for the engine to use
 Intermediate/*
