@@ -64,13 +64,15 @@ Build/*/**
 *_BuiltData.uasset
 
 # Ignore everything in the save directory
-Save/Autosaves/*
-Save/Collections/*
-Save/Config/*
-Save/Logs/*
-Save/SourceControl/*
-Save/WorldPartition/*
-Save/webcache_4430/*
+Saved/Autosaves/*
+Saved/Collections/*
+Saved/Config/*
+Saved/Config/*
+Saved/Crashes/*
+Saved/Logs/*
+Saved/SourceControl/*
+Saved/WorldPartition/*
+Saved/webcache_4430/*
 
 
 

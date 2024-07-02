@@ -85,6 +85,12 @@ void AArchVizController::SetupInputComponent()
 	InteriorMappingContext->MapKey(InteriorDeleteClickAction, EKeys::Delete);
 
 
+	TemplateMappingContext = NewObject<UInputMappingContext>(this);
+
+	TemplateLeftClickAction = NewObject<UInputAction>(this);
+	TemplateLeftClickAction->ValueType = EInputActionValueType::Boolean;
+	TemplateMappingContext->MapKey(TemplateLeftClickAction, EKeys::LeftMouseButton);
+
 
 	UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent);
 
@@ -109,13 +115,17 @@ void AArchVizController::SetupInputComponent()
 		EIC->BindAction(InteriorRClickAction, ETriggerEvent::Completed, this, &AArchVizController::InteriorRClick);
 		EIC->BindAction(InteriorDeleteClickAction, ETriggerEvent::Completed, this, &AArchVizController::InteriorDeleteClick);
 
+		EIC->BindAction(TemplateLeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::TemplateLeftClick);
+
+
 	}
 
 	LocalPlayer = GetLocalPlayer();
 
 	SubSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 
-
+	SubSystem->ClearAllMappings();
+	SubSystem->AddMappingContext(TemplateMappingContext, 0);
 
 }
 
@@ -188,6 +198,26 @@ void AArchVizController::Tick(float DeltaTime)
 		}
 	}
 
+	if (bTemplateMove && CurrTemplateActor) {
+
+		FCollisionQueryParams TraceParams;
+		TraceParams.bTraceComplex = true;
+		TraceParams.AddIgnoredActor(this);
+		TraceParams.AddIgnoredActor(CurrTemplateActor);
+	
+		FHitResult HitResult;
+		FVector CursorWorldLocation;
+		FVector CursorWorldDirection;
+		DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
+
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams)) {
+			FVector Location = HitResult.Location;
+			//Location.Z = 0;
+			CurrTemplateActor->SetActorLocation(Location);
+
+		}
+	}
+
 }
 void AArchVizController::IncFloorButtonClicked()
 {
@@ -219,6 +249,7 @@ void AArchVizController::BeginPlay()
 	bWallMove = true;
 	bFloorMove = false;
 	bInteriorMove = false;
+	bTemplateMove = false;
 	bDoorOpen = false;
 	CurrFloorNo = 0;
 
@@ -290,8 +321,21 @@ void AArchVizController::RoadLeftClick()
 			RoadWidgetInstance->WidthBox->SetValue(CurrRoadActor->GetActorRelativeScale3D().Y * 100);
 			RoadWidgetInstance->LocX->SetValue(CurrRoadActor->GetActorLocation().X);
 			RoadWidgetInstance->LocY->SetValue(CurrRoadActor->GetActorLocation().Y);
+			RoadWidgetInstance->WidthBox->SetVisibility(ESlateVisibility::Visible);
+			RoadWidgetInstance->Border_L->SetVisibility(ESlateVisibility::Visible);
+			RoadWidgetInstance->Border_W->SetVisibility(ESlateVisibility::Visible);
+			RoadWidgetInstance->DestroyButton->SetVisibility(ESlateVisibility::Visible);
+			RoadWidgetInstance->MaterialBox->SetVisibility(ESlateVisibility::Visible);
 			CurrRoadActor->ProceduralMeshRoot->SetRenderCustomDepth(true);
 			CurrRoadActor->ProceduralMeshRoot->CustomDepthStencilValue = 2.0;
+		}
+		else {
+			RoadWidgetInstance->WidthBox->SetVisibility(ESlateVisibility::Hidden);
+			RoadWidgetInstance->Border_L->SetVisibility(ESlateVisibility::Hidden);
+			RoadWidgetInstance->Border_W->SetVisibility(ESlateVisibility::Hidden);
+			RoadWidgetInstance->DestroyButton->SetVisibility(ESlateVisibility::Hidden);
+			RoadWidgetInstance->MaterialBox->SetVisibility(ESlateVisibility::Hidden);
+
 		}
 	}
 	else {
@@ -325,7 +369,7 @@ void AArchVizController::RoadLeftClick()
 						FVector Dimension;
 						Dimension.X = FVector::Dist(FirstClickLocation, SecondClickLocation);
 
-						Dimension.Y = 50;
+						Dimension.Y = 100;
 						Dimension.Z = 5;
 						FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(FirstClickLocation, SecondClickLocation);
 						if (RoadActor) {
@@ -361,26 +405,26 @@ void AArchVizController::RoadLeftClick()
 					if (OnRightOrleft(FirstClickLocation, SecondClickLocation, PrevClickLocation)) {
 						if (Angle >= 0 && Angle <= 45) {
 							EndPointDirection = Direction;
-							FirstClickLocation -= (Direction.GetSafeNormal() * (CurrRoadActor->GetActorScale3D().Y*100 / 4));
+							FirstClickLocation -= (Direction.GetSafeNormal() * (CurrRoadActor->GetActorScale3D().Y*100 / 2));
 
 						}
 						else if (Angle > 45 && Angle < 180) {
 							EndPointDirection = LeftDirection;
-							FirstClickLocation -= (LeftDirection.GetSafeNormal() * (CurrRoadActor->GetActorScale3D().Y*100 / 4));
+							FirstClickLocation -= (LeftDirection.GetSafeNormal() * (CurrRoadActor->GetActorScale3D().Y*100 / 2));
 
 						}
 					}
 					else {
 						if (Angle >= 0 && Angle <= 45) {
 							EndPointDirection = Direction;
-							FirstClickLocation -= (Direction.GetSafeNormal() * (CurrRoadActor->GetActorScale3D().Y*100/ 4));
+							FirstClickLocation -= (Direction.GetSafeNormal() * (CurrRoadActor->GetActorScale3D().Y*100/ 2));
 
 						}
 						else if (Angle > 45 && Angle < 180)
 						{
 							EndPointDirection = RightDirection;
 							GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FString::SanitizeFloat(CurrRoadActor->GetActorScale3D().Y * 100));
-							FirstClickLocation -= (RightDirection.GetSafeNormal() * (CurrRoadActor->GetActorScale3D().Y*100 / 4));
+							FirstClickLocation -= (RightDirection.GetSafeNormal() * (CurrRoadActor->GetActorScale3D().Y*100 / 2));
 							GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FirstClickLocation.ToString());
 
 						}
@@ -391,7 +435,7 @@ void AArchVizController::RoadLeftClick()
 
 					FVector Dimension;
 					Dimension.X = FVector::Dist(FirstClickLocation, SecondClickLocation);
-					Dimension.Y = 50;
+					Dimension.Y = 100;
 					Dimension.Z = 5;
 					SecondClickLocation = FirstClickLocation + (EndPointDirection.GetSafeNormal() * Dimension.X);
 					FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(FirstClickLocation, SecondClickLocation);
@@ -489,11 +533,7 @@ void AArchVizController::EditorMode() {
 	
 	if (!bEditorMode) {
 		bEditorMode = true;
-		RoadWidgetInstance->WidthBox->SetVisibility(ESlateVisibility::Visible);
-		RoadWidgetInstance->Border_L->SetVisibility(ESlateVisibility::Visible);
-		RoadWidgetInstance->Border_W->SetVisibility(ESlateVisibility::Visible);
-		RoadWidgetInstance->DestroyButton->SetVisibility(ESlateVisibility::Visible);
-		RoadWidgetInstance->MaterialBox->SetVisibility(ESlateVisibility::Visible);
+	
 		RoadWidgetInstance->EditorButtonText->SetText(FText::FromString("Go To Construction Mode"));
 	}
 	else {
@@ -555,7 +595,18 @@ void AArchVizController::OnModeChanged(FString Mode)
 		CurrRoadActor->ProceduralMeshRoot->SetRenderCustomDepth(false);
 		CurrRoadActor = nullptr;
 	}
+	if (IsValid(ClickedComponent)) {
+		ClickedComponent->SetRenderCustomDepth(false);
+		ClickedComponent = nullptr;
+	}
 
+	if (Mode == "ViewMode") {
+	
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "ajsdkh");
+		SubSystem->ClearAllMappings();
+		SubSystem->AddMappingContext(TemplateMappingContext, 0);
+	
+	}
 	if (Mode == "RoadConstruction") {
 		if (BuildingWidgetInstance && BuildingWidgetInstance->IsInViewport()) {
 			BuildingWidgetInstance->RemoveFromParent();
@@ -815,7 +866,11 @@ void AArchVizController::OnFloorLengthChanged(float Length)
 	{
 		FVector Dim = CurrFloorActor->FDimentions;
 		Dim.X = Length ;
-		CurrFloorActor->GenerateFloor(Dim);
+		if(CurrFloorActor->TypeOfActor== "Floor")
+		    CurrFloorActor->GenerateFloor(Dim);
+		else
+			CurrFloorActor->GenerateRoof(Dim);
+
 	}
 }
 
@@ -825,7 +880,10 @@ void AArchVizController::OnFloorWidthChanged(float Width)
 	{
 		FVector Dim = CurrFloorActor->FDimentions;
 		Dim.Y = Width;
-		CurrFloorActor->GenerateFloor(Dim);
+		if (CurrFloorActor->TypeOfActor == "Floor")
+			CurrFloorActor->GenerateFloor(Dim);
+		else
+			CurrFloorActor->GenerateRoof(Dim);
 	}
 }
 
@@ -953,6 +1011,14 @@ void AArchVizController::OnFloorButtonClicked()
 		WallActorInstance->Destroy();
 		WallActorInstance = nullptr;
 		bWallMove = false;
+	}
+
+	//bMove_ModifyMode = false;
+	if ((TypeOfComponent != EBuildingComponentType::None) && CurrFloorActor && bFloorMove)
+	{
+		CurrFloorActor->Destroy();
+		CurrFloorActor = nullptr;
+		bFloorMove = false;
 	}
 
 	if (IsValid(CurrFloorActor)) {
@@ -1092,7 +1158,12 @@ void AArchVizController::OnRoofButtonClicked()
 		WallActorInstance = nullptr;
 		bWallMove = false;
 	}
-
+	if ((TypeOfComponent != EBuildingComponentType::None) && CurrFloorActor && bFloorMove)
+	{
+		CurrFloorActor->Destroy();
+		CurrFloorActor = nullptr;
+		bFloorMove = false;
+	}
 	TypeOfComponent = EBuildingComponentType::Roof;
 
 	if (IsValid(CurrFloorActor)) {
@@ -1291,8 +1362,8 @@ void AArchVizController::ModifyComponentLeftClick()
 			BuildingWidgetInstance->XOffset->SetValue(0);
 			BuildingWidgetInstance->YOffset->SetValue(0);
 			BuildingWidgetInstance->ZOffset->SetValue(0);
-			BuildingWidgetInstance->FLength->SetValue(CurrFloorActor->GetActorRelativeScale3D().X * 100);
-			BuildingWidgetInstance->FWidth->SetValue(CurrFloorActor->GetActorRelativeScale3D().Y * 100);
+			BuildingWidgetInstance->FLength->SetValue(CurrFloorActor->FDimentions.X);
+			BuildingWidgetInstance->FWidth->SetValue(CurrFloorActor->FDimentions.Y);
 
 		}
 
@@ -1563,7 +1634,7 @@ void AArchVizController::SaveGame(FString Name)
 				RoadData.Dimenstion = CurRoadActor->RoadDimensions;
 				RoadData.Material = CurRoadActor->ProceduralMeshRoot->GetMaterial(0);
 				SaveGameInstance->RoadActorArray.Add(RoadData);
-				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Road Saved");
+				//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Road Saved");
 			}
 		}
 
@@ -1590,7 +1661,7 @@ void AArchVizController::SaveGame(FString Name)
 				}
 
 				SaveGameInstance->WallActorArray.Add(WallData);
-				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Saved Wall");
+				//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Saved Wall");
 			}
 		}
 
@@ -1611,7 +1682,7 @@ void AArchVizController::SaveGame(FString Name)
 					FloorData.Material = CurFloorActor->ProceduralMeshRoof->GetMaterial(0);
 
 				SaveGameInstance->FloorActorArray.Add(FloorData);
-				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Floor Saved");
+				//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Floor Saved");
 			}
 		}
 
@@ -1627,21 +1698,26 @@ void AArchVizController::SaveGame(FString Name)
 				InteriorData.StaticMesh = CurInteriorActor->InteriorStaticMesh;
 				InteriorData.InteriorType = CurInteriorActor->TypeOfInterior;
 				SaveGameInstance->InteriorActorArray.Add(InteriorData);
-				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Interior Saved");
+				//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Interior Saved");
 			}
 		}
 
 
 
 		UGameplayStatics::SaveGameToSlot(SaveGameInstance, Name, 0);
-		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Blue, "Game Saved Successfully");
+		//GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Blue, "Game Saved Successfully");
 	}
 }
 
 void AArchVizController::LoadGame(FString Name)
 {
 	UArchVizSaveGame* LoadGameInstance = Cast<UArchVizSaveGame>(UGameplayStatics::LoadGameFromSlot(Name, 0));
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
 
+    CurrTemplateActor =  GetWorld()->SpawnActor<ATemplateActor>(ATemplateActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	bTemplateMove = true;
+	CurrTemplateActor->SetActorLocation(LoadGameInstance->WallActorArray[0].WallTransform.GetLocation());
 	if (LoadGameInstance)
 	{
 		// Clear existing Road Actors
@@ -1678,7 +1754,7 @@ void AArchVizController::LoadGame(FString Name)
 		// Load Road Actors
 		for (const FRoadActorData& RoadData : LoadGameInstance->RoadActorArray)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, "Load Roads");
+			//GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, "Load Roads");
 			FActorSpawnParameters Params;
 			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			ARoadActor* SpawnActor = GetWorld()->SpawnActor<ARoadActor>(ARoadActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
@@ -1689,12 +1765,13 @@ void AArchVizController::LoadGame(FString Name)
 				SpawnActor->GenerateRoad(RoadData.Dimenstion);
 				SpawnActor->ProceduralMeshRoot->SetMaterial(0, RoadData.Material);
 			}
+			SpawnActor->AttachToActor(CurrTemplateActor, FAttachmentTransformRules::KeepWorldTransform);
 		}
 
 		// Load Wall Actors
 		for (const FWallActorData& WallData : LoadGameInstance->WallActorArray)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, "Load Walls");
+			//GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, "Load Walls");
 			FActorSpawnParameters Params;
 			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			AWallActor* SpawnActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
@@ -1728,13 +1805,15 @@ void AArchVizController::LoadGame(FString Name)
 
 					}
 				}
+				SpawnActor->AttachToActor(CurrTemplateActor, FAttachmentTransformRules::KeepWorldTransform);
+
 
 			}
 		}
 
 		for (const FFloorActorData& FloorData : LoadGameInstance->FloorActorArray)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, "Load Floors");
+			//GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, "Load Floors");
 			FActorSpawnParameters Params;
 			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			AFloorActor* SpawnActor = GetWorld()->SpawnActor<AFloorActor>(AFloorActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
@@ -1752,6 +1831,7 @@ void AArchVizController::LoadGame(FString Name)
 
 				}
 				SpawnActor->SetActorTransform(FloorData.FloorTransform);
+				SpawnActor->AttachToActor(CurrTemplateActor, FAttachmentTransformRules::KeepWorldTransform);
 
 				//SpawnActor->ProceduralMeshRoot->SetMaterial(0, FloorData.Material);
 			}
@@ -1759,7 +1839,7 @@ void AArchVizController::LoadGame(FString Name)
 
 		for (const FInteriorActorData& InteriorData : LoadGameInstance->InteriorActorArray)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, "Load Interiors");
+			//GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, "Load Interiors");
 			FActorSpawnParameters Params;
 			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			AInteriorActor* SpawnActor = GetWorld()->SpawnActor<AInteriorActor>(AInteriorActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, Params);
@@ -1769,8 +1849,21 @@ void AArchVizController::LoadGame(FString Name)
 				SpawnActor->TypeOfInterior = InteriorData.InteriorType;
 				SpawnActor->GenerateInterior(InteriorData.StaticMesh);
 				SpawnActor->SetActorTransform(InteriorData.InteriorTransform);
+				SpawnActor->AttachToActor(CurrTemplateActor, FAttachmentTransformRules::KeepWorldTransform);
+
 			}
 		}
+	}
+}
+
+void AArchVizController::TemplateLeftClick()
+{
+	if (bTemplateMove) {
+		bTemplateMove = false;
+	}
+	else {
+		bTemplateMove = true;
+
 	}
 }
 

@@ -61,6 +61,9 @@ void UArchVizWidget::PopulateComboBox(TArray<FString>& InMapNames)
 {
 	if (LoadOptions) {
 		LoadOptions->ClearOptions();
+		LoadOptions->AddOption("None");
+		LoadOptions->SetSelectedOption("None");
+
 		for (const FString& MapName : InMapNames)
 		{
 			LoadOptions->AddOption(MapName);

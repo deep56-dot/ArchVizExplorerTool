@@ -1,6 +1,0 @@
-2024/06/17-14:35:43.449 6158 Creating DB D:/UE/ArchVizExplorer/Saved/webcache_4430\IndexedDB\https_www.youtube-nocookie.com_0.indexeddb.leveldb since it was missing.
-2024/06/17-14:35:43.455 6158 Reusing MANIFEST D:/UE/ArchVizExplorer/Saved/webcache_4430\IndexedDB\https_www.youtube-nocookie.com_0.indexeddb.leveldb/MANIFEST-000001
-2024/06/17-14:35:50.145 6c5c Level-0 table #5: started
-2024/06/17-14:35:50.149 6c5c Level-0 table #5: 1166 bytes OK
-2024/06/17-14:35:50.150 6c5c Delete type=0 #3
-2024/06/17-14:35:50.150 6c5c Manual compaction at level-0 from (begin) .. (end); will stop at (end)

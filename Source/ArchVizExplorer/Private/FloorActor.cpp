@@ -30,6 +30,7 @@ void AFloorActor::GenerateFloor(FVector Dimensions)
     FDimentions = Dimensions;
 
    /* ProceduralMeshRoot->RegisterComponentWithWorld(GetWorld());*/
+    ProceduralMeshFloor->ClearAllMeshSections();
 
     TArray<FVector> Vertices;
 
@@ -122,6 +123,7 @@ void AFloorActor::GenerateRoof(FVector Dimensions)
     TypeOfActor = "Roof";
     FDimentions = Dimensions;
   
+    ProceduralMeshRoof->ClearAllMeshSections();
 
     TArray<FVector> Vertices;
 

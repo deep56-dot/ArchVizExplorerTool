@@ -12,7 +12,7 @@ void SMaterialSelectionScrollBox::Construct(const FArguments& InArgs)
 	ScrollBox = SNew(SScrollBox).Orientation(EOrientation::Orient_Horizontal);
 	MaterialAsset = InArgs._InMaterialAsset;
 	MeshType = InArgs._InMeshType;
-	FSlateColorBrush* ParentBrush = new FSlateColorBrush(FLinearColor(0.955974f, 0.871367f, 0.590619f, 1.0f));
+	FSlateColorBrush* ParentBrush = new FSlateColorBrush(FLinearColor(1, 1, 1, 1.0f));
 	TSharedPtr<SBorder> Border = SNew(SBorder).BorderImage(ParentBrush)[
 		ParentVBox.ToSharedRef()
 	];
@@ -62,7 +62,7 @@ void SMaterialSelectionScrollBox::RefreshAssetRoadMaterialThubnail()
 			[
 				SNew(STextBlock)
 					.Text(FText::FromString("Road Materials"))
-					.ColorAndOpacity(FColor::FromHex("#0d3b66")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 25))
+					.ColorAndOpacity(FColor::FromHex("#044368")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 20))
 			];
 
 
@@ -70,9 +70,9 @@ void SMaterialSelectionScrollBox::RefreshAssetRoadMaterialThubnail()
 			TSharedPtr<SVerticalBox> VerticalBox = SNew(SVerticalBox);
 			FSlateBrush* ThumbnailBrush = new FSlateBrush();
 			ThumbnailBrush->SetResourceObject(MeshData.RoadThumbnail);
-			ThumbnailBrush->SetImageSize(FVector2D(200));
-			TSharedPtr<STextBlock> TextBlock = SNew(STextBlock).ColorAndOpacity(FColor::FromHex("#0d3b66")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 20));
-			TextBlock->SetText(FText::FromString(MeshData.RoadName));
+			ThumbnailBrush->SetImageSize(FVector2D(150,200));
+		/*	TSharedPtr<STextBlock> TextBlock = SNew(STextBlock).ColorAndOpacity(FColor::FromHex("#044368")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 20));
+			TextBlock->SetText(FText::FromString(MeshData.RoadName));*/
 			TSharedPtr<SImage> ThumbnailImage = SNew(SImage).Image(ThumbnailBrush).Cursor(EMouseCursor::Hand).OnMouseButtonDown_Lambda([this, MeshData](const FGeometry& Geometry, const FPointerEvent& MouseEvent) {
 				if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton) {
 					OnRoadMaterialThubnailSelected.ExecuteIfBound(MeshData);
@@ -80,18 +80,18 @@ void SMaterialSelectionScrollBox::RefreshAssetRoadMaterialThubnail()
 				}
 				return FReply::Unhandled();
 				});
-			FSlateColorBrush* BorderBrush = new FSlateColorBrush(FLinearColor(0.904661f, 0.651406f, 0.111932f, 1.0f));
+			FSlateColorBrush* BorderBrush = new FSlateColorBrush(FLinearColor(0.015686, 0.262745, 0.407843, 1.0f));
 
-			TSharedPtr<SBorder> ImageBorder = SNew(SBorder).BorderImage(BorderBrush).Padding(10)[
+			TSharedPtr<SBorder> ImageBorder = SNew(SBorder).BorderImage(BorderBrush).Padding(5).ToolTipText(FText::FromString(MeshData.RoadName))[
 				ThumbnailImage.ToSharedRef()
 			];
 			VerticalBox->AddSlot()[
 				ImageBorder.ToSharedRef()
 			];
-			VerticalBox->AddSlot().HAlign(EHorizontalAlignment::HAlign_Center).AutoHeight().Padding(10)
+		/*	VerticalBox->AddSlot().HAlign(EHorizontalAlignment::HAlign_Center).AutoHeight().Padding(10)
 				[
 					TextBlock.ToSharedRef()
-				];
+				];*/
 
 			ScrollBox->AddSlot().Padding(10).VAlign(EVerticalAlignment::VAlign_Center)
 				[
@@ -124,9 +124,10 @@ void SMaterialSelectionScrollBox::RefreshAssetDoorMeshThubnail()
 			TSharedPtr<SVerticalBox> VerticalBox = SNew(SVerticalBox);
 			FSlateBrush* ThumbnailBrush = new FSlateBrush();
 			ThumbnailBrush->SetResourceObject(MeshData.DoorThumbnail);
-			ThumbnailBrush->SetImageSize(FVector2D(200));
-			TSharedPtr<STextBlock> TextBlock = SNew(STextBlock).ColorAndOpacity(FColor::FromHex("#0d3b66")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 20));
-			TextBlock->SetText(FText::FromString(MeshData.DoorName));
+			ThumbnailBrush->SetImageSize(FVector2D(150, 200));
+
+			//TSharedPtr<STextBlock> TextBlock = SNew(STextBlock).ColorAndOpacity(FColor::FromHex("#0d3b66")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 20));
+			//TextBlock->SetText(FText::FromString(MeshData.DoorName));
 			TSharedPtr<SImage> ThumbnailImage = SNew(SImage).Image(ThumbnailBrush).Cursor(EMouseCursor::Hand).OnMouseButtonDown_Lambda([this, MeshData](const FGeometry& Geometry, const FPointerEvent& MouseEvent) {
 				if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton) {
 					OnDoorMeshThubnailSelected.ExecuteIfBound(MeshData);
@@ -134,18 +135,18 @@ void SMaterialSelectionScrollBox::RefreshAssetDoorMeshThubnail()
 				}
 				return FReply::Unhandled();
 				});
-			FSlateColorBrush* BorderBrush = new FSlateColorBrush(FLinearColor(0.904661f, 0.651406f, 0.111932f, 1.0f));
+			FSlateColorBrush* BorderBrush = new FSlateColorBrush(FLinearColor(0.015686, 0.262745, 0.407843, 1.0f));
 
-			TSharedPtr<SBorder> ImageBorder = SNew(SBorder).BorderImage(BorderBrush).Padding(10)[
+			TSharedPtr<SBorder> ImageBorder = SNew(SBorder).BorderImage(BorderBrush).Padding(5).ToolTipText(FText::FromString(MeshData.DoorName))[
 				ThumbnailImage.ToSharedRef()
 			];
 			VerticalBox->AddSlot()[
 				ImageBorder.ToSharedRef()
 			];
-			VerticalBox->AddSlot().HAlign(EHorizontalAlignment::HAlign_Center).AutoHeight().Padding(10)
+			/*VerticalBox->AddSlot().HAlign(EHorizontalAlignment::HAlign_Center).AutoHeight().Padding(10)
 				[
 					TextBlock.ToSharedRef()
-				];
+				];*/
 
 			ScrollBox->AddSlot().Padding(10).VAlign(EVerticalAlignment::VAlign_Center)
 				[
@@ -177,28 +178,29 @@ void SMaterialSelectionScrollBox::RefreshAssetInteriorWallMeshThubnail()
 			TSharedPtr<SVerticalBox> VerticalBox = SNew(SVerticalBox);
 			FSlateBrush* ThumbnailBrush = new FSlateBrush();
 			ThumbnailBrush->SetResourceObject(MeshData.InteriorWallThumbnail);
-			ThumbnailBrush->SetImageSize(FVector2D(220,150));
-			TSharedPtr<STextBlock> TextBlock = SNew(STextBlock).ColorAndOpacity(FColor::FromHex("#0d3b66")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 12));
+			ThumbnailBrush->SetImageSize(FVector2D(150, 200));
+
+			/*TSharedPtr<STextBlock> TextBlock = SNew(STextBlock).ColorAndOpacity(FColor::FromHex("#0d3b66")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 12));
 			TextBlock->SetText(FText::FromString(MeshData.InteriorWallName));
-			TSharedPtr<SImage> ThumbnailImage = SNew(SImage).Image(ThumbnailBrush).Cursor(EMouseCursor::Hand).OnMouseButtonDown_Lambda([this, MeshData](const FGeometry& Geometry, const FPointerEvent& MouseEvent) {
+			*/TSharedPtr<SImage> ThumbnailImage = SNew(SImage).Image(ThumbnailBrush).Cursor(EMouseCursor::Hand).OnMouseButtonDown_Lambda([this, MeshData](const FGeometry& Geometry, const FPointerEvent& MouseEvent) {
 				if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton) {
 					OnInteriorWallMeshThubnailSelected.ExecuteIfBound(MeshData);
 					return FReply::Handled();
 				}
 				return FReply::Unhandled();
 				});
-			FSlateColorBrush* BorderBrush = new FSlateColorBrush(FLinearColor(0.904661f, 0.651406f, 0.111932f, 1.0f));
+			FSlateColorBrush* BorderBrush = new FSlateColorBrush(FLinearColor(0.015686, 0.262745, 0.407843, 1.0f));
 
-			TSharedPtr<SBorder> ImageBorder = SNew(SBorder).BorderImage(BorderBrush).Padding(5)[
+			TSharedPtr<SBorder> ImageBorder = SNew(SBorder).BorderImage(BorderBrush).Padding(5).ToolTipText(FText::FromString(MeshData.InteriorWallName))[
 				ThumbnailImage.ToSharedRef()
 			];
 			VerticalBox->AddSlot()[
 				ImageBorder.ToSharedRef()
 			];
-			VerticalBox->AddSlot().HAlign(EHorizontalAlignment::HAlign_Center).AutoHeight().Padding(5)
+		/*	VerticalBox->AddSlot().HAlign(EHorizontalAlignment::HAlign_Center).AutoHeight().Padding(5)
 				[
 					TextBlock.ToSharedRef()
-				];
+				];*/
 
 			ScrollBox->AddSlot().Padding(5).VAlign(EVerticalAlignment::VAlign_Center)
 				[
@@ -230,9 +232,10 @@ void SMaterialSelectionScrollBox::RefreshAssetInteriorFloorMeshThubnail()
 			TSharedPtr<SVerticalBox> VerticalBox = SNew(SVerticalBox);
 			FSlateBrush* ThumbnailBrush = new FSlateBrush();
 			ThumbnailBrush->SetResourceObject(MeshData.InteriorFloorThumbnail);
-			ThumbnailBrush->SetImageSize(FVector2D(220, 150));
-			TSharedPtr<STextBlock> TextBlock = SNew(STextBlock).ColorAndOpacity(FColor::FromHex("#0d3b66")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 12));
-			TextBlock->SetText(FText::FromString(MeshData.InteriorFloorName));
+			ThumbnailBrush->SetImageSize(FVector2D(150, 200));
+
+			/*TSharedPtr<STextBlock> TextBlock = SNew(STextBlock).ColorAndOpacity(FColor::FromHex("#0d3b66")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 12));
+			TextBlock->SetText(FText::FromString(MeshData.InteriorFloorName));*/
 			TSharedPtr<SImage> ThumbnailImage = SNew(SImage).Image(ThumbnailBrush).Cursor(EMouseCursor::Hand).OnMouseButtonDown_Lambda([this, MeshData](const FGeometry& Geometry, const FPointerEvent& MouseEvent) {
 				if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton) {
 					OnInteriorFloorMeshThubnailSelected.ExecuteIfBound(MeshData);
@@ -240,18 +243,18 @@ void SMaterialSelectionScrollBox::RefreshAssetInteriorFloorMeshThubnail()
 				}
 				return FReply::Unhandled();
 				});
-			FSlateColorBrush* BorderBrush = new FSlateColorBrush(FLinearColor(0.904661f, 0.651406f, 0.111932f, 1.0f));
+			FSlateColorBrush* BorderBrush = new FSlateColorBrush(FLinearColor(0.015686, 0.262745, 0.407843, 1.0f));
 
-			TSharedPtr<SBorder> ImageBorder = SNew(SBorder).BorderImage(BorderBrush).Padding(5)[
+			TSharedPtr<SBorder> ImageBorder = SNew(SBorder).BorderImage(BorderBrush).Padding(5).ToolTipText(FText::FromString(MeshData.InteriorFloorName))[
 				ThumbnailImage.ToSharedRef()
 			];
 			VerticalBox->AddSlot()[
 				ImageBorder.ToSharedRef()
 			];
-			VerticalBox->AddSlot().HAlign(EHorizontalAlignment::HAlign_Center).AutoHeight().Padding(5)
+			/*VerticalBox->AddSlot().HAlign(EHorizontalAlignment::HAlign_Center).AutoHeight().Padding(5)
 				[
 					TextBlock.ToSharedRef()
-				];
+				];*/
 
 			ScrollBox->AddSlot().Padding(5).VAlign(EVerticalAlignment::VAlign_Center)
 				[
@@ -283,9 +286,10 @@ void SMaterialSelectionScrollBox::RefreshAssetInteriorRoofMeshThubnail()
 			TSharedPtr<SVerticalBox> VerticalBox = SNew(SVerticalBox);
 			FSlateBrush* ThumbnailBrush = new FSlateBrush();
 			ThumbnailBrush->SetResourceObject(MeshData.InteriorRoofThumbnail);
-			ThumbnailBrush->SetImageSize(FVector2D(220, 150));
-			TSharedPtr<STextBlock> TextBlock = SNew(STextBlock).ColorAndOpacity(FColor::FromHex("#0d3b66")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 12));
-			TextBlock->SetText(FText::FromString(MeshData.InteriorRoofName));
+			ThumbnailBrush->SetImageSize(FVector2D(150, 200));
+
+		/*	TSharedPtr<STextBlock> TextBlock = SNew(STextBlock).ColorAndOpacity(FColor::FromHex("#0d3b66")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 12));
+			TextBlock->SetText(FText::FromString(MeshData.InteriorRoofName));*/
 			TSharedPtr<SImage> ThumbnailImage = SNew(SImage).Image(ThumbnailBrush).Cursor(EMouseCursor::Hand).OnMouseButtonDown_Lambda([this, MeshData](const FGeometry& Geometry, const FPointerEvent& MouseEvent) {
 				if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton) {
 					OnInteriorRoofMeshThubnailSelected.ExecuteIfBound(MeshData);
@@ -293,18 +297,18 @@ void SMaterialSelectionScrollBox::RefreshAssetInteriorRoofMeshThubnail()
 				}
 				return FReply::Unhandled();
 				});
-			FSlateColorBrush* BorderBrush = new FSlateColorBrush(FLinearColor(0.904661f, 0.651406f, 0.111932f, 1.0f));
+			FSlateColorBrush* BorderBrush = new FSlateColorBrush(FLinearColor(0.015686, 0.262745, 0.407843, 1.0f));
 
-			TSharedPtr<SBorder> ImageBorder = SNew(SBorder).BorderImage(BorderBrush).Padding(5)[
+			TSharedPtr<SBorder> ImageBorder = SNew(SBorder).BorderImage(BorderBrush).Padding(5).ToolTipText(FText::FromString(MeshData.InteriorRoofName))[
 				ThumbnailImage.ToSharedRef()
 			];
 			VerticalBox->AddSlot()[
 				ImageBorder.ToSharedRef()
 			];
-			VerticalBox->AddSlot().HAlign(EHorizontalAlignment::HAlign_Center).AutoHeight().Padding(5)
+			/*VerticalBox->AddSlot().HAlign(EHorizontalAlignment::HAlign_Center).AutoHeight().Padding(5)
 				[
 					TextBlock.ToSharedRef()
-				];
+				];*/
 
 			ScrollBox->AddSlot().Padding(5).VAlign(EVerticalAlignment::VAlign_Center)
 				[
@@ -336,9 +340,10 @@ void SMaterialSelectionScrollBox::RefreshAssetBuildingMaterialThubnail()
 			TSharedPtr<SVerticalBox> VerticalBox = SNew(SVerticalBox);
 			FSlateBrush* ThumbnailBrush = new FSlateBrush();
 			ThumbnailBrush->SetResourceObject(MeshData.BuildingThumbnail);
-			ThumbnailBrush->SetImageSize(FVector2D(200));
-			TSharedPtr<STextBlock> TextBlock = SNew(STextBlock).ColorAndOpacity(FColor::FromHex("#0d3b66")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 20));
-			TextBlock->SetText(FText::FromString(MeshData.BuildingName));
+			ThumbnailBrush->SetImageSize(FVector2D(150, 200));
+
+			/*TSharedPtr<STextBlock> TextBlock = SNew(STextBlock).ColorAndOpacity(FColor::FromHex("#0d3b66")).Font(FSlateFontInfo(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 20));
+			TextBlock->SetText(FText::FromString(MeshData.BuildingName));*/
 			TSharedPtr<SImage> ThumbnailImage = SNew(SImage).Image(ThumbnailBrush).Cursor(EMouseCursor::Hand).OnMouseButtonDown_Lambda([this, MeshData](const FGeometry& Geometry, const FPointerEvent& MouseEvent) {
 				if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton) {
 					OnBuildingMaterialThubnailSelected.ExecuteIfBound(MeshData);
@@ -346,18 +351,18 @@ void SMaterialSelectionScrollBox::RefreshAssetBuildingMaterialThubnail()
 				}
 				return FReply::Unhandled();
 				});
-			FSlateColorBrush* BorderBrush = new FSlateColorBrush(FLinearColor(0.904661f, 0.651406f, 0.111932f, 1.0f));
+			FSlateColorBrush* BorderBrush = new FSlateColorBrush(FLinearColor(0.015686, 0.262745, 0.407843, 1.0f));
 
-			TSharedPtr<SBorder> ImageBorder = SNew(SBorder).BorderImage(BorderBrush).Padding(10)[
+			TSharedPtr<SBorder> ImageBorder = SNew(SBorder).BorderImage(BorderBrush).Padding(5).ToolTipText(FText::FromString(MeshData.BuildingName))[
 				ThumbnailImage.ToSharedRef()
 			];
 			VerticalBox->AddSlot()[
 				ImageBorder.ToSharedRef()
 			];
-			VerticalBox->AddSlot().HAlign(EHorizontalAlignment::HAlign_Center).AutoHeight().Padding(10)
+		/*	VerticalBox->AddSlot().HAlign(EHorizontalAlignment::HAlign_Center).AutoHeight().Padding(10)
 				[
 					TextBlock.ToSharedRef()
-				];
+				];*/
 
 			ScrollBox->AddSlot().Padding(10).VAlign(EVerticalAlignment::VAlign_Center)
 				[

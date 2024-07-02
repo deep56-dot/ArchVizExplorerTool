@@ -23,6 +23,7 @@
 #include <MaterialWidget.h>
 #include <InteriorActor.h>
 #include <InteriorWidget.h>
+#include "TemplateActor.h"
 #include "ArchVizSaveGame.h"
 #include "ArchVizController.generated.h"
 
@@ -369,6 +370,20 @@ public:
 	 UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	 TSubclassOf<UMaterialWidget> MaterialWidget;
 
+	 UPROPERTY()
+	 UInputMappingContext* TemplateMappingContext;
+
+	 UPROPERTY()
+	 UInputAction* TemplateLeftClickAction;
+
+	 UPROPERTY()
+	 bool bTemplateMove;
+
+	 UPROPERTY()
+	 ATemplateActor* CurrTemplateActor;
+
+	 UFUNCTION()
+	 void TemplateLeftClick();
 
 		 
 		 UFUNCTION()
