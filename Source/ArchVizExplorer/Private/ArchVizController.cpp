@@ -90,6 +90,10 @@ void AArchVizController::SetupInputComponent()
 	TemplateLeftClickAction = NewObject<UInputAction>(this);
 	TemplateLeftClickAction->ValueType = EInputActionValueType::Boolean;
 	TemplateMappingContext->MapKey(TemplateLeftClickAction, EKeys::LeftMouseButton);
+	
+	TemplateRClickAction = NewObject<UInputAction>(this);
+	TemplateRClickAction->ValueType = EInputActionValueType::Boolean;
+	TemplateMappingContext->MapKey(TemplateRClickAction, EKeys::R);
 
 
 	UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent);
@@ -116,6 +120,7 @@ void AArchVizController::SetupInputComponent()
 		EIC->BindAction(InteriorDeleteClickAction, ETriggerEvent::Completed, this, &AArchVizController::InteriorDeleteClick);
 
 		EIC->BindAction(TemplateLeftClickAction, ETriggerEvent::Completed, this, &AArchVizController::TemplateLeftClick);
+		EIC->BindAction(TemplateRClickAction, ETriggerEvent::Completed, this, &AArchVizController::TemplateRClick);
 
 
 	}
@@ -202,8 +207,9 @@ void AArchVizController::Tick(float DeltaTime)
 
 		FCollisionQueryParams TraceParams;
 		TraceParams.bTraceComplex = true;
-		TraceParams.AddIgnoredActor(this);
+		TraceParams.AddIgnoredActor(GetPawn());
 		TraceParams.AddIgnoredActor(CurrTemplateActor);
+		TraceParams.AddIgnoredActors(IgonoreActors);
 	
 		FHitResult HitResult;
 		FVector CursorWorldLocation;
@@ -1085,6 +1091,14 @@ void AArchVizController::OnFloorButtonClicked()
 			CurrFloorActor->SetActorLocation(Location);
 
 		}
+		else {
+			SetCustomText(FText::FromString("Floor Not Generated Click Again With Go Near To House"));
+			if (IsValid(CurrFloorActor)) {
+				CurrFloorActor->Destroy();
+				CurrFloorActor = nullptr;
+			}
+
+		}
 	}
 }
 
@@ -1221,6 +1235,14 @@ void AArchVizController::OnRoofButtonClicked()
 			FVector Location = HitResult.Location;
 			CurrFloorActor->GenerateRoof(FVector(100, 100, 10));
 			CurrFloorActor->SetActorLocation(Location);
+
+		}
+		else {
+			SetCustomText(FText::FromString("Roof Not Generated Click Again With Go Near To House"));
+			if (IsValid(CurrFloorActor)) {
+				CurrFloorActor->Destroy();
+				CurrFloorActor = nullptr;
+			}
 
 		}
 	}
@@ -1423,7 +1445,7 @@ void AArchVizController::InteriorLeftClick()
 
 			if ((bCon && FActor) || (WActor && InteriorType == "Wall")) {
 				bInteriorMove = false;
-				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Interior Left Click");
+				//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "Interior Left Click");
 			}
 
 		}
@@ -1714,7 +1736,7 @@ void AArchVizController::LoadGame(FString Name)
 	UArchVizSaveGame* LoadGameInstance = Cast<UArchVizSaveGame>(UGameplayStatics::LoadGameFromSlot(Name, 0));
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
-
+	IgonoreActors.Empty();
     CurrTemplateActor =  GetWorld()->SpawnActor<ATemplateActor>(ATemplateActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 	bTemplateMove = true;
 	CurrTemplateActor->SetActorLocation(LoadGameInstance->WallActorArray[0].WallTransform.GetLocation());
@@ -1766,6 +1788,7 @@ void AArchVizController::LoadGame(FString Name)
 				SpawnActor->ProceduralMeshRoot->SetMaterial(0, RoadData.Material);
 			}
 			SpawnActor->AttachToActor(CurrTemplateActor, FAttachmentTransformRules::KeepWorldTransform);
+			IgonoreActors.Add(SpawnActor);
 		}
 
 		// Load Wall Actors
@@ -1806,6 +1829,7 @@ void AArchVizController::LoadGame(FString Name)
 					}
 				}
 				SpawnActor->AttachToActor(CurrTemplateActor, FAttachmentTransformRules::KeepWorldTransform);
+				IgonoreActors.Add(SpawnActor);
 
 
 			}
@@ -1832,6 +1856,7 @@ void AArchVizController::LoadGame(FString Name)
 				}
 				SpawnActor->SetActorTransform(FloorData.FloorTransform);
 				SpawnActor->AttachToActor(CurrTemplateActor, FAttachmentTransformRules::KeepWorldTransform);
+				IgonoreActors.Add(SpawnActor);
 
 				//SpawnActor->ProceduralMeshRoot->SetMaterial(0, FloorData.Material);
 			}
@@ -1850,6 +1875,7 @@ void AArchVizController::LoadGame(FString Name)
 				SpawnActor->GenerateInterior(InteriorData.StaticMesh);
 				SpawnActor->SetActorTransform(InteriorData.InteriorTransform);
 				SpawnActor->AttachToActor(CurrTemplateActor, FAttachmentTransformRules::KeepWorldTransform);
+				IgonoreActors.Add(SpawnActor);
 
 			}
 		}
@@ -1864,6 +1890,15 @@ void AArchVizController::TemplateLeftClick()
 	else {
 		bTemplateMove = true;
 
+	}
+}
+
+void AArchVizController::TemplateRClick()
+{
+	if (CurrTemplateActor) {
+		FRotator Rot = CurrTemplateActor->GetActorRotation();
+		Rot.Yaw += 90;
+		CurrTemplateActor->SetActorRotation(Rot);
 	}
 }
 

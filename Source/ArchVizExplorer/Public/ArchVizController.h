@@ -376,14 +376,24 @@ public:
 	 UPROPERTY()
 	 UInputAction* TemplateLeftClickAction;
 
+
+	 UPROPERTY()
+	 UInputAction* TemplateRClickAction;
+
 	 UPROPERTY()
 	 bool bTemplateMove;
 
 	 UPROPERTY()
 	 ATemplateActor* CurrTemplateActor;
 
+	 UPROPERTY()
+	 TArray<AActor*> IgonoreActors;
+
 	 UFUNCTION()
 	 void TemplateLeftClick();
+
+	 UFUNCTION()
+	 void TemplateRClick();
 
 		 
 		 UFUNCTION()
