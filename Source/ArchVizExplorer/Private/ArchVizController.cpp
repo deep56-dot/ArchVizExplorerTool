@@ -858,7 +858,7 @@ void AArchVizController::DeleteClicked()
 void AArchVizController::FloorLeftClick()
 {
 	bFloorMove = false;
-	if (CurrFloorActor->TypeOfActor == "Floor") {
+	if (CurrFloorActor && CurrFloorActor->TypeOfActor == "Floor") {
 		FVector Location_=CurrFloorActor->GetActorLocation();
 		Location_.Z = 0;
 		CurrFloorActor->SetActorLocation(Location_);
