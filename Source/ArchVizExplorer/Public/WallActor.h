@@ -33,6 +33,9 @@ public:
 	USceneComponent* scene;
 
 	UPROPERTY()
+	int NoOfSegments;
+
+	UPROPERTY()
 	TArray<UStaticMeshComponent*> StaticMeshComponentArr;
 
 	UPROPERTY(EditAnywhere)

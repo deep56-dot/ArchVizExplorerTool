@@ -42,6 +42,7 @@ void AWallActor::DestroyWalls() {
 void AWallActor::GenerateWall(int NoOfSegents)
 {
 	DestroyWalls();
+	NoOfSegments = NoOfSegents;
 	for (int i = 0; i < NoOfSegents; i++) {
 		UStaticMeshComponent* Component = NewObject<UStaticMeshComponent>(this);
 		
@@ -49,9 +50,9 @@ void AWallActor::GenerateWall(int NoOfSegents)
 			float length = StaticMesh->GetBounds().GetBox().GetSize().X;
 			float Height = StaticMesh->GetBounds().GetBox().GetSize().Z;
 			Component->SetStaticMesh(StaticMesh);
-			Component->SetupAttachment(RootComponent);
-			Component->RegisterComponentWithWorld(GetWorld());
-			Component->SetRelativeLocation(FVector(i * length, Component->GetRelativeLocation().Y, Component->GetRelativeLocation().Z));
+			Component->AttachToComponent(RootComponent,FAttachmentTransformRules::KeepRelativeTransform);
+			Component->RegisterComponent();
+			Component->SetRelativeLocation(FVector(i * length, 0,0));
 			StaticMeshComponentArr.Add(Component);
 		}
 	}

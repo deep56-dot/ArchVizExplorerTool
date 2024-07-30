@@ -154,10 +154,88 @@ void AArchVizController::Tick(float DeltaTime)
 		if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams)) {
 			FVector Location = HitResult.Location;
 			Location.Z = (CurrFloorNo *320);
+			auto Rotation = PlayerCameraManager->GetCameraRotation();
+
+
+			//GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, FString::FromInt(Rotation.Yaw));
 			if (IsValid(WallActorInstance)) {
+				if ((Rotation.Yaw >= 0 && Rotation.Yaw < 45) || (Rotation.Yaw >= 315 && Rotation.Yaw < 360))
+				{
+					WallActorInstance->SetActorRotation(FRotator(0, 90, 0));
+				}
+				else if (Rotation.Yaw >= 45 && Rotation.Yaw < 135)
+				{
+					WallActorInstance->SetActorRotation(FRotator(0, 180, 0));
+
+				}
+				else if (Rotation.Yaw >= 135 && Rotation.Yaw < 225)
+				{
+					WallActorInstance->SetActorRotation(FRotator(0, -90, 0));
+
+				}
+				else
+				{
+					WallActorInstance->SetActorRotation(FRotator(0, 0, 0));
+				}
 				WallActorInstance->SetActorLocation(Location);
+
 				SnapActor(20, WallActorInstance);
 			}
+		}
+	}
+
+	if (!bWallMove && TypeOfComponent==EBuildingComponentType::Wall) {
+		if (bWallGenearting && IsValid(WallActorInstance)) {
+			FVector StartLocation = WallActorInstance->GetActorLocation();
+			FVector EndLocation;
+
+			FCollisionQueryParams TraceParams;
+			TraceParams.bTraceComplex = true;
+			TraceParams.AddIgnoredActor(GetPawn());
+			TraceParams.AddIgnoredActor(WallActorInstance);
+			FHitResult HitResult;
+			FVector CursorWorldLocation;
+			FVector CursorWorldDirection;
+			DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
+
+			if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams)) {
+				EndLocation = HitResult.Location;
+				EndLocation.Z = (CurrFloorNo * 320);
+			}
+
+			int X = EndLocation.X - StartLocation.X;
+			int Y = EndLocation.Y - StartLocation.Y;
+
+			int32 NoOFSegment = FVector::Dist(StartLocation, EndLocation) / 200;
+			
+			if (NoOFSegment == WallActorInstance->NoOfSegments)
+				return;
+			
+
+			if (abs(X) > abs(Y))
+			{
+				if (X >= 0)
+				{
+					WallActorInstance->SetActorRotation(FRotator(0, 0, 0));
+				}
+				else
+				{
+					WallActorInstance->SetActorRotation(FRotator(0, 180, 0));
+				}
+			}
+			else
+			{
+				if (Y >= 0)
+				{
+					WallActorInstance->SetActorRotation(FRotator(0, 90, 0));
+				}
+				else
+				{
+					WallActorInstance->SetActorRotation(FRotator(0, -90, 0));
+				}
+			}
+
+			WallActorInstance->GenerateWall(NoOFSegment);
 		}
 	}
 
@@ -178,12 +256,103 @@ void AArchVizController::Tick(float DeltaTime)
 				Location.Z = 0;
 			if (CurrFloorActor->TypeOfActor == "Roof")
 				Location.Z = ((CurrFloorNo + 1)*300)+(CurrFloorNo*20);
+			auto Rotation = PlayerCameraManager->GetCameraRotation();
 
-			CurrFloorActor->SetActorLocation(Location);
 
-			SnapActor(20, CurrFloorActor);
+
+			if (IsValid(CurrFloorActor)) {
+				if ((Rotation.Yaw >= 0 && Rotation.Yaw < 45) || (Rotation.Yaw >= 315 && Rotation.Yaw < 360))
+				{
+					CurrFloorActor->SetActorRotation(FRotator(0, 90, 0));
+				}
+				else if (Rotation.Yaw >= 45 && Rotation.Yaw < 135)
+				{
+					CurrFloorActor->SetActorRotation(FRotator(0, 180, 0));
+
+				}
+				else if (Rotation.Yaw >= 135 && Rotation.Yaw < 225)
+				{
+					CurrFloorActor->SetActorRotation(FRotator(0, -90, 0));
+
+				}
+				else
+				{
+					CurrFloorActor->SetActorRotation(FRotator(0, 0, 0));
+				}
+				CurrFloorActor->SetActorLocation(Location);
+
+				SnapActor(20, CurrFloorActor);
+			}
+			
 		}
 	}
+
+	if (!bFloorMove && (TypeOfComponent == EBuildingComponentType::Floor || TypeOfComponent == EBuildingComponentType::Roof)) {
+		if (bFloorGenerating && CurrFloorActor) {
+
+			FVector StartLocation = CurrFloorActor->GetActorLocation();
+			if (CurrFloorActor->TypeOfActor == "Floor")
+				StartLocation.Z = 0;
+			if (CurrFloorActor->TypeOfActor == "Roof")
+				StartLocation.Z = ((CurrFloorNo + 1) * 300) + (CurrFloorNo * 20);
+			FVector EndLocation;
+
+			FCollisionQueryParams TraceParams;
+			TraceParams.bTraceComplex = true;
+			TraceParams.AddIgnoredActor(GetPawn());
+			TraceParams.AddIgnoredActor(CurrFloorActor);
+			FHitResult HitResult;
+			FVector CursorWorldLocation;
+			FVector CursorWorldDirection;
+			DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
+
+			if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams)) {
+				EndLocation = HitResult.Location;
+				if (CurrFloorActor->TypeOfActor == "Floor")
+					EndLocation.Z = 0;
+				if (CurrFloorActor->TypeOfActor == "Roof")
+					EndLocation.Z = ((CurrFloorNo + 1) * 300) + (CurrFloorNo * 20);
+			}
+
+			int X = EndLocation.X - StartLocation.X;
+			int Y = EndLocation.Y - StartLocation.Y;
+
+		/*	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, FString::FromInt(X) + "X");
+			GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, FString::FromInt(Y) + "Y");*/
+
+			if (X > 0 && Y > 0) {
+				CurrFloorActor->SetActorRotation(FRotator(0, 0, 0));
+				if (CurrFloorActor->TypeOfActor == "Floor")
+					CurrFloorActor->GenerateFloor(FVector(abs(X), abs(Y), 10));
+				else
+					CurrFloorActor->GenerateRoof(FVector(abs(X), abs(Y), 10));
+
+			}
+			else if (X > 0 && Y < 0) {
+				CurrFloorActor->SetActorRotation(FRotator(0, 270, 0));
+				if (CurrFloorActor->TypeOfActor == "Floor")
+					CurrFloorActor->GenerateFloor(FVector(abs(Y), abs(X), 10));
+				else
+					CurrFloorActor->GenerateRoof(FVector(abs(Y), abs(X), 10));
+			}
+			else if (X < 0 && Y > 0) {
+				CurrFloorActor->SetActorRotation(FRotator(0, 90, 0));
+				if (CurrFloorActor->TypeOfActor == "Floor")
+					CurrFloorActor->GenerateFloor(FVector(abs(Y), abs(X), 10));
+				else
+					CurrFloorActor->GenerateRoof(FVector(abs(Y), abs(X), 10));
+			}
+			else if (X < 0 && Y < 0) {
+				CurrFloorActor->SetActorRotation(FRotator(0, 180, 0));
+				if (CurrFloorActor->TypeOfActor == "Floor")
+					CurrFloorActor->GenerateFloor(FVector(abs(X), abs(Y), 10));
+				else
+					CurrFloorActor->GenerateRoof(FVector(abs(X), abs(Y), 10));
+			}
+
+		}
+	}
+
 	if (bInteriorMove && CurrInteriorActor) {
 
 		FCollisionQueryParams TraceParams;
@@ -253,6 +422,7 @@ void AArchVizController::BeginPlay()
 	bFirstRoad = true;
 	bEditorMode = false;
 	bWallMove = true;
+	bWallGenearting = false;
 	bFloorMove = false;
 	bInteriorMove = false;
 	bTemplateMove = false;
@@ -764,7 +934,16 @@ void AArchVizController::SnapActor(float SnapValue, AActor* CurrActor)
 
 void AArchVizController::WallLeftClick()
 {
+	if(WallActorInstance){
 	bWallMove = false;
+		if (bWallGenearting) {
+			WallActorInstance = nullptr;
+			bWallGenearting = false;
+		}
+		else {
+			bWallGenearting = true;
+		}
+	}
 }
 
 void AArchVizController::WallRClick()
@@ -780,7 +959,7 @@ void AArchVizController::OnWallSegmentsChanged(float Segments)
 {
 	if (IsValid(WallActorInstance))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, "hdszbfjkc");
+	
 		WallActorInstance->GenerateWall(BuildingWidgetInstance->NoOfSegments->GetValue());
 	}
 }
@@ -857,11 +1036,15 @@ void AArchVizController::DeleteClicked()
 
 void AArchVizController::FloorLeftClick()
 {
-	bFloorMove = false;
-	if (CurrFloorActor && CurrFloorActor->TypeOfActor == "Floor") {
-		FVector Location_=CurrFloorActor->GetActorLocation();
-		Location_.Z = 0;
-		CurrFloorActor->SetActorLocation(Location_);
+	if (CurrFloorActor) {
+		bFloorMove = false;
+		if (bFloorGenerating) {
+			CurrFloorActor = nullptr;
+			bFloorGenerating = false;
+		}
+		else {
+			bFloorGenerating = true;
+		}
 	}
 
 }
@@ -1139,11 +1322,11 @@ void AArchVizController::OnWallButtonClicked()
 		WallActorInstance = nullptr;
 	}
 	if (BuildingWidgetInstance) {
-		BuildingWidgetInstance->Border_Seg->SetVisibility(ESlateVisibility::Visible);
+		
 		BuildingWidgetInstance->Border_FloorL->SetVisibility(ESlateVisibility::Collapsed);
 		BuildingWidgetInstance->Border_FloorW->SetVisibility(ESlateVisibility::Collapsed);
 		BuildingWidgetInstance->DoorMeshBox->SetVisibility(ESlateVisibility::Collapsed);
-	
+		
 		BuildingWidgetInstance->VerticalBox_Modify->SetVisibility(ESlateVisibility::Hidden);
 	}
 
@@ -1154,7 +1337,8 @@ void AArchVizController::OnWallButtonClicked()
 	WallActorInstance = GetWorld()->SpawnActor<AWallActor>(WallActor, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 	if (WallActorInstance && TypeOfComponent == EBuildingComponentType::Wall)
 	{
-		WallActorInstance->GenerateWall(BuildingWidgetInstance->NoOfSegments->GetValue());
+		WallActorInstance->GenerateWall(1);
+		BuildingWidgetInstance->NoOfSegments->SetValue(1);
 	}
 
 	bWallMove = true;
@@ -1178,6 +1362,7 @@ void AArchVizController::OnRoofButtonClicked()
 		CurrFloorActor = nullptr;
 		bFloorMove = false;
 	}
+
 	TypeOfComponent = EBuildingComponentType::Roof;
 
 	if (IsValid(CurrFloorActor)) {
@@ -1347,7 +1532,8 @@ void AArchVizController::ModifyComponentLeftClick()
 			BuildingWidgetInstance->VerticalBox_Modify->SetVisibility(ESlateVisibility::Visible);
 			BuildingWidgetInstance->Border_FloorL->SetVisibility(ESlateVisibility::Collapsed);
 			BuildingWidgetInstance->Border_FloorW->SetVisibility(ESlateVisibility::Collapsed);
-		
+			BuildingWidgetInstance->Border_Seg->SetVisibility(ESlateVisibility::Visible);
+			BuildingWidgetInstance->NoOfSegments->SetValue(float(WallActorInstance->NoOfSegments));
 			BuildingWidgetInstance->XOffset->SetValue(0);
 			BuildingWidgetInstance->YOffset->SetValue(0);
 			BuildingWidgetInstance->ZOffset->SetValue(0);

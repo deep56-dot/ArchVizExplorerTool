@@ -169,12 +169,18 @@ public:
 	 bool bWallMove;
 
 	 UPROPERTY()
+	 bool bWallGenearting;
+
+
+
+	 UPROPERTY()
 	 UInputMappingContext* WallMappingContext;
 
 	 /** Action to update location. */
 	 UPROPERTY()
 	 UInputAction* WallLeftClickAction; 
 
+	
 	 UPROPERTY()
 	 UInputAction* DeleteClickAction;
 	 
@@ -231,6 +237,9 @@ public:
 
 	 UPROPERTY()
 	 bool bFloorMove;
+
+	 UPROPERTY()
+	 bool bFloorGenerating;
 
 	 UFUNCTION()
 	 void FloorLeftClick();

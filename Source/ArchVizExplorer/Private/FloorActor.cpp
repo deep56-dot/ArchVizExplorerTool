@@ -33,89 +33,99 @@ void AFloorActor::GenerateFloor(FVector Dimensions)
     ProceduralMeshFloor->ClearAllMeshSections();
 
     TArray<FVector> Vertices;
+    TArray<int32> Triangles;
+    TArray<FVector> Normals;
+    TArray<FVector2D> UVs;
+    TArray<FLinearColor> VertexColors;
+    TArray<FProcMeshTangent> Tangents;
 
-    float L = Dimensions.X ;
-    float W = Dimensions.Y ;
-    float H = Dimensions.Z ;
+    // Front
+    Vertices.Add(FVector(0, Dimensions.Y, 0));
+    Vertices.Add(FVector(0, Dimensions.Y, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, Dimensions.Y, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, Dimensions.Y, 0));
 
-    // Offset all vertices by the amount to shift the origin to the bottom-front-left corner
-    FVector Offset = FVector(L, W, H);
+    // Back
+    Vertices.Add(FVector(0, 0, 0));
+    Vertices.Add(FVector(0, 0, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, 0, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, 0, 0));
 
-    // Front Face
-    Vertices.Add(FVector(-L, -W, -H) + Offset); // 0
-    Vertices.Add(FVector(-L, W, -H) + Offset);  // 1
-    Vertices.Add(FVector(-L, W, H) + Offset);   // 2
-    Vertices.Add(FVector(-L, -W, H) + Offset);  // 3
+    // Left
+    Vertices.Add(FVector(0, 0, 0));
+    Vertices.Add(FVector(0, 0, Dimensions.Z));
+    Vertices.Add(FVector(0, Dimensions.Y, Dimensions.Z));
+    Vertices.Add(FVector(0, Dimensions.Y, 0));
 
-    // Bottom Face
-    Vertices.Add(FVector(-L, -W, -H) + Offset); // 4
-    Vertices.Add(FVector(L, -W, -H) + Offset);  // 5
-    Vertices.Add(FVector(L, W, -H) + Offset);   // 6
-    Vertices.Add(FVector(-L, W, -H) + Offset);  // 7
+    // Right
+    Vertices.Add(FVector(Dimensions.X, 0, 0));
+    Vertices.Add(FVector(Dimensions.X, 0, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, Dimensions.Y, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, Dimensions.Y, 0));
 
-    // Back Face
-    Vertices.Add(FVector(L, -W, -H) + Offset);  // 8
-    Vertices.Add(FVector(L, -W, H) + Offset);   // 9
-    Vertices.Add(FVector(L, W, H) + Offset);    // 10
-    Vertices.Add(FVector(L, W, -H) + Offset);   // 11
+    // Top
+    Vertices.Add(FVector(0, Dimensions.Y, Dimensions.Z));
+    Vertices.Add(FVector(0, 0, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, 0, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, Dimensions.Y, Dimensions.Z));
 
-    // Top Face
-    Vertices.Add(FVector(L, -W, H) + Offset);   // 12
-    Vertices.Add(FVector(-L, -W, H) + Offset);  // 13
-    Vertices.Add(FVector(-L, W, H) + Offset);   // 14
-    Vertices.Add(FVector(L, W, H) + Offset);    // 15
+    // Bottom
+    Vertices.Add(FVector(0, Dimensions.Y, 0));
+    Vertices.Add(FVector(0, 0, 0));
+    Vertices.Add(FVector(Dimensions.X, 0, 0));
+    Vertices.Add(FVector(Dimensions.X, Dimensions.Y, 0));
 
-    // Left Face
-    Vertices.Add(FVector(-L, -W, H) + Offset);  // 16
-    Vertices.Add(FVector(L, -W, H) + Offset);   // 17
-    Vertices.Add(FVector(L, -W, -H) + Offset);  // 18
-    Vertices.Add(FVector(-L, -W, -H) + Offset); // 19
+    // Triangles (two triangles per face)
+    Triangles.Append({
+        0, 3, 1, 1, 3, 2,
+        4, 5, 7, 5, 6, 7,
+        8, 11, 9, 9, 11, 10,
+        12, 13, 15, 13, 14, 15,
+        16, 19, 17, 17, 19, 18,
+        20, 21, 23, 21, 22, 23
+        });
 
-    // Right Face
-    Vertices.Add(FVector(-L, W, H) + Offset);   // 20
-    Vertices.Add(FVector(-L, W, -H) + Offset);  // 21
-    Vertices.Add(FVector(L, W, -H) + Offset);   // 22
-    Vertices.Add(FVector(L, W, H) + Offset);    // 23
+    // Normals (perpendicular to each face)
+    for (int32 i{}; i < 4; i++)
+    {
+        Normals.Add(FVector(0, 1, 0));
+    }
+    for (int32 i{}; i < 4; i++)
+    {
+        Normals.Add(FVector(0, -1, 0));
+    }
+    for (int32 i{}; i < 4; i++)
+    {
+        Normals.Add(FVector(-1, 0, 0));
+    }
+    for (int32 i{}; i < 4; i++)
+    {
+        Normals.Add(FVector(1, 0, 0));
+    }
+    for (int32 i{}; i < 4; i++)
+    {
+        Normals.Add(FVector(0, 0, 1));
+    }
+    for (int32 i{}; i < 4; i++)
+    {
+        Normals.Add(FVector(0, 0, -1));
+    }
 
-    // Triangles
-    TArray<int32> Triangles = {
-        0, 1, 3, 1, 2, 3,    // Front
-        4, 5, 7, 5, 6, 7,    // Bottom
-        8, 9, 11, 9, 10, 11, // Back
-        12, 13, 15, 13, 14, 15, // Top
-        16, 17, 19, 17, 18, 19, // Left
-        20, 21, 23, 21, 22, 23  // Right
-    };
+    // UV Mapping
+    for (int32 i{}; i < 3; ++i)
+    {
+        UVs.Add(FVector2D(0, 1));
+        UVs.Add(FVector2D(0, 0));
+        UVs.Add(FVector2D(1, 0));
+        UVs.Add(FVector2D(1, 1));
 
-    // UVs
-    TArray<FVector2D> UVs = {
-        FVector2D(0,1), FVector2D(1,1), FVector2D(1,0), FVector2D(0,0),
-        FVector2D(0,0), FVector2D(0,1), FVector2D(1,1), FVector2D(1,0),
-        FVector2D(1,1), FVector2D(1,0), FVector2D(0,0), FVector2D(0,1),
-        FVector2D(0,0), FVector2D(0,1), FVector2D(1,1), FVector2D(1,0),
-        FVector2D(1,0), FVector2D(0,0), FVector2D(0,1), FVector2D(1,1),
-        FVector2D(0,0), FVector2D(0,1), FVector2D(1,1), FVector2D(1,0)
-    };
+        UVs.Add(FVector2D(0, 1));
+        UVs.Add(FVector2D(0, 0));
+        UVs.Add(FVector2D(-1, 0));
+        UVs.Add(FVector2D(-1, 1));
+    }
 
-    // Normals
-    TArray<FVector> Normals = {
-        FVector(-1,0,0), FVector(-1,0,0), FVector(-1,0,0), FVector(-1,0,0), // Front
-        FVector(0,0,-1), FVector(0,0,-1), FVector(0,0,-1), FVector(0,0,-1), // Bottom
-        FVector(1,0,0), FVector(1,0,0), FVector(1,0,0), FVector(1,0,0), // Back
-        FVector(0,0,1), FVector(0,0,1), FVector(0,0,1), FVector(0,0,1), // Top
-        FVector(0,-1,0), FVector(0,-1,0), FVector(0,-1,0), FVector(0,-1,0), // Left
-        FVector(0,1,0), FVector(0,1,0), FVector(0,1,0), FVector(0,1,0)  // Right
-    };
-
-    ProceduralMeshFloor->CreateMeshSection_LinearColor(
-        0, Vertices, Triangles, Normals, UVs,
-        TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true
-    );
-
-	/*if (Material)
-	{
-		ProceduralMeshRoot->SetMaterial(0, Material);
-	}*/
+    ProceduralMeshFloor->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
 }
 
 void AFloorActor::GenerateRoof(FVector Dimensions)
@@ -126,80 +136,97 @@ void AFloorActor::GenerateRoof(FVector Dimensions)
     ProceduralMeshRoof->ClearAllMeshSections();
 
     TArray<FVector> Vertices;
+    TArray<int32> Triangles;
+    TArray<FVector> Normals;
+    TArray<FVector2D> UVs;
+    TArray<FLinearColor> VertexColors;
+    TArray<FProcMeshTangent> Tangents;
 
-    float L = Dimensions.X;
-    float W = Dimensions.Y;
-    float H = Dimensions.Z;
+    // Front
+    Vertices.Add(FVector(0, Dimensions.Y, 0));
+    Vertices.Add(FVector(0, Dimensions.Y, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, Dimensions.Y, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, Dimensions.Y, 0));
 
-    // Offset all vertices by the amount to shift the origin to the bottom-front-left corner
-    FVector Offset = FVector(L, W, H );
-   
+    // Back
+    Vertices.Add(FVector(0, 0, 0));
+    Vertices.Add(FVector(0, 0, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, 0, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, 0, 0));
 
-    // Front Face
-    Vertices.Add(FVector(-L, -W, -H) + Offset); // 0
-    Vertices.Add(FVector(-L, W, -H) + Offset);  // 1
-    Vertices.Add(FVector(-L, W, H) + Offset);   // 2
-    Vertices.Add(FVector(-L, -W, H) + Offset);  // 3
+    // Left
+    Vertices.Add(FVector(0, 0, 0));
+    Vertices.Add(FVector(0, 0, Dimensions.Z));
+    Vertices.Add(FVector(0, Dimensions.Y, Dimensions.Z));
+    Vertices.Add(FVector(0, Dimensions.Y, 0));
 
-    // Bottom Face
-    Vertices.Add(FVector(-L, -W, -H) + Offset); // 4
-    Vertices.Add(FVector(L, -W, -H) + Offset);  // 5
-    Vertices.Add(FVector(L, W, -H) + Offset);   // 6
-    Vertices.Add(FVector(-L, W, -H) + Offset);  // 7
+    // Right
+    Vertices.Add(FVector(Dimensions.X, 0, 0));
+    Vertices.Add(FVector(Dimensions.X, 0, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, Dimensions.Y, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, Dimensions.Y, 0));
 
-    // Back Face
-    Vertices.Add(FVector(L, -W, -H) + Offset);  // 8
-    Vertices.Add(FVector(L, -W, H) + Offset);   // 9
-    Vertices.Add(FVector(L, W, H) + Offset);    // 10
-    Vertices.Add(FVector(L, W, -H) + Offset);   // 11
+    // Top
+    Vertices.Add(FVector(0, Dimensions.Y, Dimensions.Z));
+    Vertices.Add(FVector(0, 0, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, 0, Dimensions.Z));
+    Vertices.Add(FVector(Dimensions.X, Dimensions.Y, Dimensions.Z));
 
-    // Top Face
-    Vertices.Add(FVector(L, -W, H) + Offset);   // 12
-    Vertices.Add(FVector(-L, -W, H) + Offset);  // 13
-    Vertices.Add(FVector(-L, W, H) + Offset);   // 14
-    Vertices.Add(FVector(L, W, H) + Offset);    // 15
+    // Bottom
+    Vertices.Add(FVector(0, Dimensions.Y, 0));
+    Vertices.Add(FVector(0, 0, 0));
+    Vertices.Add(FVector(Dimensions.X, 0, 0));
+    Vertices.Add(FVector(Dimensions.X, Dimensions.Y, 0));
 
-    // Left Face
-    Vertices.Add(FVector(-L, -W, H) + Offset);  // 16
-    Vertices.Add(FVector(L, -W, H) + Offset);   // 17
-    Vertices.Add(FVector(L, -W, -H) + Offset);  // 18
-    Vertices.Add(FVector(-L, -W, -H) + Offset); // 19
+    // Triangles (two triangles per face)
+    Triangles.Append({
+        0, 3, 1, 1, 3, 2,
+        4, 5, 7, 5, 6, 7,
+        8, 11, 9, 9, 11, 10,
+        12, 13, 15, 13, 14, 15,
+        16, 19, 17, 17, 19, 18,
+        20, 21, 23, 21, 22, 23
+        });
 
-    // Right Face
-    Vertices.Add(FVector(-L, W, H) + Offset);   // 20
-    Vertices.Add(FVector(-L, W, -H) + Offset);  // 21
-    Vertices.Add(FVector(L, W, -H) + Offset);   // 22
-    Vertices.Add(FVector(L, W, H) + Offset);    // 23
+    // Normals (perpendicular to each face)
+    for (int32 i{}; i < 4; i++)
+    {
+        Normals.Add(FVector(0, 1, 0));
+    }
+    for (int32 i{}; i < 4; i++)
+    {
+        Normals.Add(FVector(0, -1, 0));
+    }
+    for (int32 i{}; i < 4; i++)
+    {
+        Normals.Add(FVector(-1, 0, 0));
+    }
+    for (int32 i{}; i < 4; i++)
+    {
+        Normals.Add(FVector(1, 0, 0));
+    }
+    for (int32 i{}; i < 4; i++)
+    {
+        Normals.Add(FVector(0, 0, 1));
+    }
+    for (int32 i{}; i < 4; i++)
+    {
+        Normals.Add(FVector(0, 0, -1));
+    }
 
-    // Triangles
-    TArray<int32> Triangles = {
-        0, 1, 3, 1, 2, 3,    // Front
-        4, 5, 7, 5, 6, 7,    // Bottom
-        8, 9, 11, 9, 10, 11, // Back
-        12, 13, 15, 13, 14, 15, // Top
-        16, 17, 19, 17, 18, 19, // Left
-        20, 21, 23, 21, 22, 23  // Right
-    };
+    // UV Mapping
+    for (int32 i{}; i < 3; ++i)
+    {
+        UVs.Add(FVector2D(0, 1));
+        UVs.Add(FVector2D(0, 0));
+        UVs.Add(FVector2D(1, 0));
+        UVs.Add(FVector2D(1, 1));
 
-    // UVs
-    TArray<FVector2D> UVs = {
-        FVector2D(0,1), FVector2D(1,1), FVector2D(1,0), FVector2D(0,0),
-        FVector2D(0,0), FVector2D(0,1), FVector2D(1,1), FVector2D(1,0),
-        FVector2D(1,1), FVector2D(1,0), FVector2D(0,0), FVector2D(0,1),
-        FVector2D(0,0), FVector2D(0,1), FVector2D(1,1), FVector2D(1,0),
-        FVector2D(1,0), FVector2D(0,0), FVector2D(0,1), FVector2D(1,1),
-        FVector2D(0,0), FVector2D(0,1), FVector2D(1,1), FVector2D(1,0)
-    };
-
-    // Normals
-    TArray<FVector> Normals = {
-        FVector(-1,0,0), FVector(-1,0,0), FVector(-1,0,0), FVector(-1,0,0), // Front
-        FVector(0,0,-1), FVector(0,0,-1), FVector(0,0,-1), FVector(0,0,-1), // Bottom
-        FVector(1,0,0), FVector(1,0,0), FVector(1,0,0), FVector(1,0,0), // Back
-        FVector(0,0,1), FVector(0,0,1), FVector(0,0,1), FVector(0,0,1), // Top
-        FVector(0,-1,0), FVector(0,-1,0), FVector(0,-1,0), FVector(0,-1,0), // Left
-        FVector(0,1,0), FVector(0,1,0), FVector(0,1,0), FVector(0,1,0)  // Right
-    };
+        UVs.Add(FVector2D(0, 1));
+        UVs.Add(FVector2D(0, 0));
+        UVs.Add(FVector2D(-1, 0));
+        UVs.Add(FVector2D(-1, 1));
+    }
 
     ProceduralMeshRoof->CreateMeshSection_LinearColor(
         0, Vertices, Triangles, Normals, UVs,
