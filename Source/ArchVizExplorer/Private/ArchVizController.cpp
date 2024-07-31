@@ -159,23 +159,25 @@ void AArchVizController::Tick(float DeltaTime)
 
 			//GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, FString::FromInt(Rotation.Yaw));
 			if (IsValid(WallActorInstance)) {
-				if ((Rotation.Yaw >= 0 && Rotation.Yaw < 45) || (Rotation.Yaw >= 315 && Rotation.Yaw < 360))
-				{
-					WallActorInstance->SetActorRotation(FRotator(0, 90, 0));
-				}
-				else if (Rotation.Yaw >= 45 && Rotation.Yaw < 135)
-				{
-					WallActorInstance->SetActorRotation(FRotator(0, 180, 0));
+				if(bIsNewActor){
+					if ((Rotation.Yaw >= 0 && Rotation.Yaw < 45) || (Rotation.Yaw >= 315 && Rotation.Yaw < 360))
+					{
+						WallActorInstance->SetActorRotation(FRotator(0, 90, 0));
+					}
+					else if (Rotation.Yaw >= 45 && Rotation.Yaw < 135)
+					{
+						WallActorInstance->SetActorRotation(FRotator(0, 180, 0));
 
-				}
-				else if (Rotation.Yaw >= 135 && Rotation.Yaw < 225)
-				{
-					WallActorInstance->SetActorRotation(FRotator(0, -90, 0));
+					}
+					else if (Rotation.Yaw >= 135 && Rotation.Yaw < 225)
+					{
+						WallActorInstance->SetActorRotation(FRotator(0, -90, 0));
 
-				}
-				else
-				{
-					WallActorInstance->SetActorRotation(FRotator(0, 0, 0));
+					}
+					else
+					{
+						WallActorInstance->SetActorRotation(FRotator(0, 0, 0));
+					}
 				}
 				WallActorInstance->SetActorLocation(Location);
 
@@ -236,6 +238,8 @@ void AArchVizController::Tick(float DeltaTime)
 			}
 
 			WallActorInstance->GenerateWall(NoOFSegment);
+			SnapActor(20, WallActorInstance);
+
 		}
 	}
 
@@ -256,28 +260,31 @@ void AArchVizController::Tick(float DeltaTime)
 				Location.Z = 0;
 			if (CurrFloorActor->TypeOfActor == "Roof")
 				Location.Z = ((CurrFloorNo + 1)*300)+(CurrFloorNo*20);
+
 			auto Rotation = PlayerCameraManager->GetCameraRotation();
 
 
 
 			if (IsValid(CurrFloorActor)) {
-				if ((Rotation.Yaw >= 0 && Rotation.Yaw < 45) || (Rotation.Yaw >= 315 && Rotation.Yaw < 360))
-				{
-					CurrFloorActor->SetActorRotation(FRotator(0, 90, 0));
-				}
-				else if (Rotation.Yaw >= 45 && Rotation.Yaw < 135)
-				{
-					CurrFloorActor->SetActorRotation(FRotator(0, 180, 0));
+				if(bIsNewActor){
+					if ((Rotation.Yaw >= 0 && Rotation.Yaw < 45) || (Rotation.Yaw >= 315 && Rotation.Yaw < 360))
+					{
+						CurrFloorActor->SetActorRotation(FRotator(0, 90, 0));
+					}
+					else if (Rotation.Yaw >= 45 && Rotation.Yaw < 135)
+					{
+						CurrFloorActor->SetActorRotation(FRotator(0, 180, 0));
 
-				}
-				else if (Rotation.Yaw >= 135 && Rotation.Yaw < 225)
-				{
-					CurrFloorActor->SetActorRotation(FRotator(0, -90, 0));
+					}
+					else if (Rotation.Yaw >= 135 && Rotation.Yaw < 225)
+					{
+						CurrFloorActor->SetActorRotation(FRotator(0, -90, 0));
 
-				}
-				else
-				{
-					CurrFloorActor->SetActorRotation(FRotator(0, 0, 0));
+					}
+					else
+					{
+						CurrFloorActor->SetActorRotation(FRotator(0, 0, 0));
+					}
 				}
 				CurrFloorActor->SetActorLocation(Location);
 
@@ -319,35 +326,36 @@ void AArchVizController::Tick(float DeltaTime)
 
 		/*	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, FString::FromInt(X) + "X");
 			GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Black, FString::FromInt(Y) + "Y");*/
+			SnapActor(20, CurrFloorActor);
 
 			if (X > 0 && Y > 0) {
 				CurrFloorActor->SetActorRotation(FRotator(0, 0, 0));
 				if (CurrFloorActor->TypeOfActor == "Floor")
-					CurrFloorActor->GenerateFloor(FVector(abs(X), abs(Y), 10));
+					CurrFloorActor->GenerateFloor(FVector(abs(X), abs(Y), 20));
 				else
-					CurrFloorActor->GenerateRoof(FVector(abs(X), abs(Y), 10));
+					CurrFloorActor->GenerateRoof(FVector(abs(X), abs(Y), 20));
 
 			}
 			else if (X > 0 && Y < 0) {
 				CurrFloorActor->SetActorRotation(FRotator(0, 270, 0));
 				if (CurrFloorActor->TypeOfActor == "Floor")
-					CurrFloorActor->GenerateFloor(FVector(abs(Y), abs(X), 10));
+					CurrFloorActor->GenerateFloor(FVector(abs(Y), abs(X), 20));
 				else
-					CurrFloorActor->GenerateRoof(FVector(abs(Y), abs(X), 10));
+					CurrFloorActor->GenerateRoof(FVector(abs(Y), abs(X), 20));
 			}
 			else if (X < 0 && Y > 0) {
 				CurrFloorActor->SetActorRotation(FRotator(0, 90, 0));
 				if (CurrFloorActor->TypeOfActor == "Floor")
-					CurrFloorActor->GenerateFloor(FVector(abs(Y), abs(X), 10));
+					CurrFloorActor->GenerateFloor(FVector(abs(Y), abs(X), 20));
 				else
-					CurrFloorActor->GenerateRoof(FVector(abs(Y), abs(X), 10));
+					CurrFloorActor->GenerateRoof(FVector(abs(Y), abs(X), 20));
 			}
 			else if (X < 0 && Y < 0) {
 				CurrFloorActor->SetActorRotation(FRotator(0, 180, 0));
 				if (CurrFloorActor->TypeOfActor == "Floor")
-					CurrFloorActor->GenerateFloor(FVector(abs(X), abs(Y), 10));
+					CurrFloorActor->GenerateFloor(FVector(abs(X), abs(Y), 20));
 				else
-					CurrFloorActor->GenerateRoof(FVector(abs(X), abs(Y), 10));
+					CurrFloorActor->GenerateRoof(FVector(abs(X), abs(Y), 20));
 			}
 
 		}
@@ -418,6 +426,7 @@ void AArchVizController::BeginPlay()
 	Super::BeginPlay();
 
 	bShowMouseCursor = true;
+	bIsNewActor = false;
 	bFirstClick = true;
 	bFirstRoad = true;
 	bEditorMode = false;
@@ -1269,6 +1278,7 @@ void AArchVizController::OnFloorButtonClicked()
 		if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams)) {
 
 			FVector Location = HitResult.Location;
+			bIsNewActor = true;
 
 			CurrFloorActor->GenerateFloor(FVector(100, 100, 10));
 			CurrFloorActor->SetActorLocation(Location);
@@ -1338,6 +1348,8 @@ void AArchVizController::OnWallButtonClicked()
 	if (WallActorInstance && TypeOfComponent == EBuildingComponentType::Wall)
 	{
 		WallActorInstance->GenerateWall(1);
+		bIsNewActor = true;
+
 		BuildingWidgetInstance->NoOfSegments->SetValue(1);
 	}
 
@@ -1416,7 +1428,7 @@ void AArchVizController::OnRoofButtonClicked()
 		BuildingWidgetInstance->FLength->SetValue(CurrFloorActor->GetActorRelativeScale3D().X * 100);
 		BuildingWidgetInstance->FWidth->SetValue(CurrFloorActor->GetActorRelativeScale3D().Y * 100);
 		if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams)) {
-
+			bIsNewActor = true;
 			FVector Location = HitResult.Location;
 			CurrFloorActor->GenerateRoof(FVector(100, 100, 10));
 			CurrFloorActor->SetActorLocation(Location);
@@ -1486,7 +1498,7 @@ void AArchVizController::ModifyComponentLeftClick()
 	//bMove_ModifyMode = false;
 	bWallMove = false;
 	bFloorMove = false;
-
+	bIsNewActor = false;
 
 	if (CurrOffsetActor)
 	{

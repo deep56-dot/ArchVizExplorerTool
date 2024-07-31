@@ -237,6 +237,9 @@ public:
 
 	 UPROPERTY()
 	 bool bFloorMove;
+	 
+	 UPROPERTY()
+	 bool bIsNewActor;
 
 	 UPROPERTY()
 	 bool bFloorGenerating;
